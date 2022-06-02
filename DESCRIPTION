@@ -29,3 +29,5 @@ Imports:
     torchtransformers
 Suggests: 
     recipes
+URL: https://github.com/macmillancontentscience/tidybert
+BugReports: https://github.com/macmillancontentscience/tidybert/issues
