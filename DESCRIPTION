@@ -1,0 +1,31 @@
+Package: tidybert
+Title: Tidy BERT-like Models
+Version: 0.0.0.9000
+Authors@R: c(
+    person(given = "Jonathan",
+           family = "Bratt",
+           role = c("aut"),
+           email = "jonathan.bratt@macmillan.com",
+           comment = c(ORCID = "0000-0003-2859-0076")),
+    person(given = "Jon",
+           family = "Harmon",
+           role = c("aut", "cre"),
+           email = "jonthegeek@gmail.com",
+           comment = c(ORCID = "0000-0003-4781-4346")),
+    person(given = "Bedford Freeman & Worth Pub Grp LLC DBA Macmillan Learning", 
+           role = c("cph"))
+    )
+Description: Implements BERT NLP models with a consistent interface for fitting 
+    and creating predictions. The models are fully compatible with the 
+    tidymodels framework.
+License: Apache License (>= 2)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.0
+Imports: 
+    hardhat,
+    rlang,
+    stats,
+    torchtransformers
+Suggests: 
+    recipes
