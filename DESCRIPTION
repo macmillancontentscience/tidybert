@@ -27,6 +27,8 @@ Imports:
     rlang,
     stats,
     torchtransformers
+Remotes:
+    macmillancontentscience/torchtransformers
 Suggests: 
     recipes,
     testthat (>= 3.0.0)
