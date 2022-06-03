@@ -62,7 +62,7 @@ bert_classification.default <- function(x, ...) {
 #' @rdname bert_classification
 bert_classification.data.frame <- function(x, y, ...) {
   processed <- hardhat::mold(x, y)
-  bert_classification_bridge(processed, ...)
+  return(.bert_classification_bridge(processed, ...))
 }
 
 # XY method - matrix
@@ -71,7 +71,7 @@ bert_classification.data.frame <- function(x, y, ...) {
 #' @rdname bert_classification
 bert_classification.matrix <- function(x, y, ...) {
   processed <- hardhat::mold(x, y)
-  bert_classification_bridge(processed, ...)
+  return(.bert_classification_bridge(processed, ...))
 }
 
 # Formula method
@@ -80,7 +80,7 @@ bert_classification.matrix <- function(x, y, ...) {
 #' @rdname bert_classification
 bert_classification.formula <- function(formula, data, ...) {
   processed <- hardhat::mold(formula, data)
-  bert_classification_bridge(processed, ...)
+  return(.bert_classification_bridge(processed, ...))
 }
 
 # Recipe method
@@ -89,21 +89,23 @@ bert_classification.formula <- function(formula, data, ...) {
 #' @rdname bert_classification
 bert_classification.recipe <- function(x, data, ...) {
   processed <- hardhat::mold(x, data)
-  bert_classification_bridge(processed, ...)
+  return(.bert_classification_bridge(processed, ...))
 }
 
 # ------------------------------------------------------------------------------
 # Bridge
 
-bert_classification_bridge <- function(processed, ...) {
+.bert_classification_bridge <- function(processed, ...) {
   predictors <- processed$predictors
   outcome <- processed$outcomes[[1]]
 
-  fit <- bert_classification_impl(predictors, outcome)
+  fit <- .bert_classification_impl(predictors, outcome)
 
-  new_bert_classification(
-    coefs = fit$coefs,
-    blueprint = processed$blueprint
+  return(
+    .new_bert_classification(
+      coefs = fit$coefs,
+      blueprint = processed$blueprint
+    )
   )
 }
 
@@ -111,18 +113,20 @@ bert_classification_bridge <- function(processed, ...) {
 # ------------------------------------------------------------------------------
 # Implementation
 
-bert_classification_impl <- function(predictors, outcome) {
-  list(coefs = 1)
+.bert_classification_impl <- function(predictors, outcome) {
+  return(list(coefs = 1))
 }
 
 
 # ------------------------------------------------------------------------------
 # Constructor
 
-new_bert_classification <- function(coefs, blueprint) {
-  hardhat::new_model(
-    coefs = coefs,
-    blueprint = blueprint,
-    class = "bert_classification"
+.new_bert_classification <- function(coefs, blueprint) {
+  return(
+    hardhat::new_model(
+      coefs = coefs,
+      blueprint = blueprint,
+      class = "bert_classification"
+    )
   )
 }

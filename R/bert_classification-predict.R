@@ -37,39 +37,41 @@ predict.bert_classification <- function(object,
                                         type = "class",
                                         ...) {
   forged <- hardhat::forge(new_data, object$blueprint)
-  rlang::arg_match(type, valid_bert_classification_predict_types())
-  predict_bert_classification_bridge(type, object, forged$predictors)
+  rlang::arg_match(type, .valid_bert_classification_predict_types())
+  return(.predict_bert_classification_bridge(type, object, forged$predictors))
 }
 
-valid_bert_classification_predict_types <- function() {
-  c("class")
+.valid_bert_classification_predict_types <- function() {
+  return(c("class"))
 }
 
 # ------------------------------------------------------------------------------
 # Bridge
 
-predict_bert_classification_bridge <- function(type, model, predictors) {
+.predict_bert_classification_bridge <- function(type, model, predictors) {
   predictors <- as.matrix(predictors)
 
-  predict_function <- get_bert_classification_predict_function(type)
+  predict_function <- .get_bert_classification_predict_function(type)
   predictions <- predict_function(model, predictors)
 
   hardhat::validate_prediction_size(predictions, predictors)
 
-  predictions
+  return(predictions)
 }
 
-get_bert_classification_predict_function <- function(type) {
-  switch(
-    type,
-    class = predict_bert_classification_class
+.get_bert_classification_predict_function <- function(type) {
+  return(
+    switch(
+      type,
+      class = .predict_bert_classification_class
+    )
   )
 }
 
 # ------------------------------------------------------------------------------
 # Implementation
 
-predict_bert_classification_class <- function(model, predictors) {
+.predict_bert_classification_class <- function(model, predictors) {
   predictions <- rep(1L, times = nrow(predictors))
-  hardhat::spruce_class(predictions)
+  return(hardhat::spruce_class(predictions))
 }
