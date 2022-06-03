@@ -15,8 +15,8 @@ Authors@R: c(
     person(given = "Bedford Freeman & Worth Pub Grp LLC DBA Macmillan Learning", 
            role = c("cph"))
     )
-Description: Implements BERT NLP models with a consistent interface for fitting 
-    and creating predictions. The models are fully compatible with the 
+Description: Implements BERT-like NLP models with a consistent interface for 
+    fitting and creating predictions. The models are fully compatible with the 
     tidymodels framework.
 License: Apache License (>= 2)
 Encoding: UTF-8
@@ -25,7 +25,6 @@ RoxygenNote: 7.2.0
 Imports: 
     hardhat,
     rlang,
-    stats,
     torchtransformers
 Remotes:
     macmillancontentscience/torchtransformers

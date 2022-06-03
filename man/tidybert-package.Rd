@@ -6,7 +6,15 @@
 \alias{tidybert-package}
 \title{tidybert: Tidy BERT-like Models}
 \description{
-Implements BERT NLP models with a consistent interface for fitting and creating predictions. The models are fully compatible with the tidymodels framework.
+Implements BERT-like NLP models with a consistent interface for fitting and creating predictions. The models are fully compatible with the tidymodels framework.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/macmillancontentscience/tidybert}
+  \item Report bugs at \url{https://github.com/macmillancontentscience/tidybert/issues}
+}
+
 }
 \author{
 \strong{Maintainer}: Jon Harmon \email{jonthegeek@gmail.com} (\href{https://orcid.org/0000-0003-4781-4346}{ORCID})
