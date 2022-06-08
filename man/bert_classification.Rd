@@ -26,8 +26,8 @@ bert_classification(x, ...)
 \itemize{
 \item A \strong{data frame} of character predictors.
 \item A \strong{matrix} of character predictors.
-\item A \strong{recipe} specifying a set of preprocessing steps created
-from \code{\link[recipes:recipe]{recipes::recipe()}}.
+\item A \strong{recipe} specifying a set of preprocessing steps created from
+\code{\link[recipes:recipe]{recipes::recipe()}}.
 }}
 
 \item{...}{Not currently used, but required for extensibility.}
@@ -35,9 +35,9 @@ from \code{\link[recipes:recipe]{recipes::recipe()}}.
 \item{y}{When \code{x} is a \strong{data frame} or \strong{matrix}, \code{y} is the outcome
 specified as:
 \itemize{
-\item A \strong{data frame} with 1 character or factor column.
-\item A \strong{matrix} with 1 character or factor column.
-\item A character or factor \strong{vector}.
+\item A \strong{data frame} with 1 factor column.
+\item A \strong{matrix} with 1 factor column.
+\item A factor \strong{vector}.
 }}
 
 \item{formula}{A formula specifying the outcome terms on the left-hand side,
@@ -45,12 +45,14 @@ and the predictor terms on the right-hand side.}
 
 \item{data}{When a \strong{recipe} or \strong{formula} is used, \code{data} is specified as:
 \itemize{
-\item A \strong{data frame} containing both the predictors and the outcome.
+\item A \strong{data frame} containing both the predictors and the outcome. The
+outcome should be a factor, or a character vector.
 }}
 }
 \value{
 A \code{bert_classification} object.
 }
 \description{
-\code{bert_classification()} fits a classifier neural network the style of \href{https://github.com/google-research/bert}{BERT from Google Research}.
+\code{bert_classification()} fits a classifier neural network in the style of
+\href{https://github.com/google-research/bert}{BERT from Google Research}.
 }

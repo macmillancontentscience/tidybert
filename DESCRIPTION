@@ -23,14 +23,20 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.0
 Imports: 
+    glue,
     hardhat,
+    magrittr,
+    purrr,
     rlang,
     torchtransformers
 Remotes:
     macmillancontentscience/torchtransformers
 Suggests: 
+    knitr,
     recipes,
+    rmarkdown,
     testthat (>= 3.0.0)
 URL: https://github.com/macmillancontentscience/tidybert
 BugReports: https://github.com/macmillancontentscience/tidybert/issues
 Config/testthat/edition: 3
+VignetteBuilder: knitr

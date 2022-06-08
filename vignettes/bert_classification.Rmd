@@ -1,0 +1,145 @@
+---
+title: "Fitting a BERT-style Classification Model"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Fitting a BERT-style Classification Model}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+```{r setup}
+library(tidybert)
+```
+
+Here we demonstrate how to easily fit a BERT-based classification model.
+
+## The MNLI Dataset
+
+We will use the [MultiNLI dataset](https://cims.nyu.edu/~sbowman/multinli/) (MNLI) to set up an entailment task.
+
+For more details about the task and the dataset, see the Textual Entailment vignette in {torchtransformers}.
+
+```{r download-data, options}
+# TODO: Remove this and build the dataset-fetcher into {tt} as a demo. I
+# manually copied the dataset from dlr::app_cache_dir("torchtransformers") to
+# dlr::app_cache_dir("torchtransformers") in the meantime in case I don't get to
+# that step, to keep this stand-alone.
+
+# Set up a processor function for {dlr} to load the data.
+process_mnli <- function(source_file) {
+  dataset_names <- c(
+    "train",
+    "dev_matched",
+    "dev_mismatched",
+    "test_matched",
+    "test_mismatched"
+  )
+  # Also make those the names so purrr uses them.
+  names(dataset_names) <- dataset_names
+  
+  mnli_tibbles <- purrr::map(
+    dataset_names,
+    function(this_dataset) {
+      # We specify column types to make sure things come in as we expect.
+      column_spec <- dplyr::case_when(
+        stringr::str_starts(this_dataset, "dev_") ~ "iicccccccccccccc",
+        stringr::str_starts(this_dataset, "test_") ~ "iiiccccccc",
+        TRUE ~ "iicccccccccc"
+      )
+      raw_tibble <- readr::read_tsv(
+        unz(source_file, fs::path("MNLI", this_dataset, ext = "tsv")),
+        col_types = column_spec,
+        # There are a couple lines that screw up if we include a quote
+        # character.
+        quote = ""
+      )
+      # If there are labels, standardize them, to make sure the factor levels
+      # are always the same.
+      if ("gold_label" %in% colnames(raw_tibble)) {
+        raw_tibble$gold_label <- factor(
+          raw_tibble$gold_label,
+          levels = c("entailment", "neutral", "contradiction")
+        )
+      }
+      return(
+        dplyr::select(
+          raw_tibble,
+          -index,
+          -promptID,
+          -pairID,
+          -dplyr::ends_with("_parse"),
+          -dplyr::starts_with("label")
+        )
+      )
+    }
+  )
+  
+  return(mnli_tibbles)
+}
+
+# By default downloading large files often fails. Increase the timeout.
+old_timeout <- options(timeout = 1000)
+
+data_url <- "https://dl.fbaipublicfiles.com/glue/data/MNLI.zip"
+
+mnli_tibbles <- dlr::read_or_cache(
+  source_path = data_url,
+  appname = "tidybert",
+  process_f = process_mnli
+)
+
+# Restore the timeout.
+options(old_timeout)
+```
+
+## Fit the Model
+
+We will use the `train` dataset to fit a simple classification model.
+
+```{r fit}
+# Quick tests of different methods.
+
+entailment_fit_formula <- bert_classification(
+  gold_label ~ sentence1 + sentence2, 
+  data = mnli_tibbles$train
+)
+
+# Doesn't work yet.
+# entailment_fit_recipe <- recipes::recipe(
+#   gold_label ~ sentence1 + sentence2,
+#   data = mnli_tibbles$train
+# ) %>% 
+#   bert_classification(data = mnli_tibbles$train)
+
+entailment_fit_dataframe <- bert_classification(
+  x = dplyr::select(mnli_tibbles$train, sentence1, sentence2),
+  y = mnli_tibbles$train$gold_label
+)
+
+entailment_fit_matrix <- bert_classification(
+  x = as.matrix(dplyr::select(mnli_tibbles$train, sentence1, sentence2)),
+  y = mnli_tibbles$train$gold_label
+)
+
+identical(
+  entailment_fit_formula$predictors, entailment_fit_dataframe$predictors
+)
+identical(
+  entailment_fit_formula$predictors, entailment_fit_matrix$predictors
+)
+
+# Right now the gold_labels name gets replaced sometimes, but doesn't matter.
+names(entailment_fit_formula$outcomes) <- "gold_labels"
+names(entailment_fit_dataframe$outcomes) <- "gold_labels"
+names(entailment_fit_matrix$outcomes) <- "gold_labels"
+identical(entailment_fit_formula$outcomes, entailment_fit_dataframe$outcomes)
+identical(entailment_fit_formula$outcomes, entailment_fit_matrix$outcomes)
+```
