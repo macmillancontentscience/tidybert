@@ -38,7 +38,10 @@ Suggests:
     knitr,
     recipes,
     rmarkdown,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    dlr,
+    dplyr,
+    stringr
 URL: https://github.com/macmillancontentscience/tidybert
 BugReports: https://github.com/macmillancontentscience/tidybert/issues
 Config/testthat/edition: 3
