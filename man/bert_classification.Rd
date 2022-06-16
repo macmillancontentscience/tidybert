@@ -9,7 +9,12 @@
 \alias{bert_classification.recipe}
 \title{Fit a BERT-style neural network}
 \usage{
-bert_classification(x, ...)
+bert_classification(
+  x,
+  model_name = "bert_tiny_uncased",
+  n_tokens = torchtransformers::config_bert(model_name, "max_tokens"),
+  ...
+)
 
 \method{bert_classification}{default}(x, ...)
 

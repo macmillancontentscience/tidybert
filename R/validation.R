@@ -51,7 +51,27 @@
         "\n",
         "{bad_msg}",
         .sep = ""
-      )
+      ),
+      class = "bad_predictor_classes"
+    )
+  }
+  return(invisible(predictors))
+}
+
+.validate_predictor_count <- function(predictors, max_predictors = 2) {
+  if (ncol(predictors) > max_predictors) {
+    all_cols <- glue::glue_collapse(
+      glue::single_quote(names(predictors)),
+      sep = ", "
+    )
+    rlang::abort(
+      glue::glue(
+        "We currently support 1 or 2 predictors columns.",
+        "These columns were identified as predictors:",
+        all_cols,
+        .sep = "\n"
+      ),
+      class = "too_many_predictors"
     )
   }
   return(invisible(predictors))

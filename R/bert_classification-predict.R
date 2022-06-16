@@ -51,7 +51,8 @@ predict.bert_classification <- function(object,
 .predict_bert_classification_bridge <- function(type, object, predictors) {
   predictors_ds <- torchtransformers::dataset_bert(
     x = predictors,
-    y = NULL
+    y = NULL,
+    n_tokens = object$n_tokens
   )
 
   predict_function <- .get_bert_classification_predict_function(type)
@@ -75,14 +76,21 @@ predict.bert_classification <- function(object,
 # ------------------------------------------------------------------------------
 # Implementation
 
-.predict_bert_classification_class <- function(object, predictors) {
+.predict_bert_classification_shared <- function(object, predictors) {
   # Get the prediction output and apply softmax.
-  # TODO: Do this in a predict method of the model?
-  predictions <- torch::nnf_softmax(
+  return(
+    torch::nnf_softmax(
       input = predict(object$luz_model, predictors),
       dim = 2
     )
-  predictions <- torch::torch_argmax(predictions, 2)
+  )
+}
+
+.predict_bert_classification_class <- function(object, predictors) {
+  predictions <- torch::torch_argmax(
+    .predict_bert_classification_shared(object, predictors),
+    2
+  )
 
   predictions <- torch::as_array(predictions$to(device = "cpu"))
 
@@ -96,10 +104,7 @@ predict.bert_classification <- function(object,
 }
 
 .predict_bert_classification_prob <- function(object, predictors) {
-  predictions <- torch::nnf_softmax(
-    input = predict(object$luz_model, predictors),
-    dim = 2
-  )
+  predictions <- .predict_bert_classification_shared(object, predictors)
 
   predictions <- torch::as_array(predictions$to(device = "cpu"))
 

@@ -13,8 +13,8 @@ model_bert_linear(model_name = "bert_tiny_uncased", output_dim = 1L)
 \item{output_dim}{Integer; the target number of output dimensions.}
 }
 \value{
-A torch neural net model with pretrained weights for the transformer
-and a final dense layer.
+A torch neural net model with pretrained BERT weights and a final
+dense layer.
 }
 \description{
 Construct a BERT model with pretrained weights, and add a final dense linear

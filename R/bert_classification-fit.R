@@ -45,7 +45,12 @@
 #' @return A `bert_classification` object.
 #'
 #' @export
-bert_classification <- function(x, ...) {
+bert_classification <- function(x,
+                                model_name = "bert_tiny_uncased",
+                                n_tokens = torchtransformers::config_bert(
+                                  model_name, "max_tokens"
+                                ),
+                                ...) {
   UseMethod("bert_classification")
 }
 
@@ -108,26 +113,36 @@ bert_classification.recipe <- function(x, data, ...) {
 # ------------------------------------------------------------------------------
 # Bridge
 
-.bert_classification_bridge <- function(processed, ...) {
+.bert_classification_bridge <- function(processed,
+                                        model_name = "bert_tiny_uncased",
+                                        n_tokens = torchtransformers::config_bert(
+                                          model_name, "max_tokens"
+                                        ),
+                                        ...) {
   #### Validate processed data.
 
-  # Validate predictors. It should be one or more character vectors (really up
-  # to two but for now we won't enforce that).
+  # Validate predictors. Right now we only support up to two character columns.
   .validate_predictors_are_character(processed$predictors)
+  .validate_predictor_count(processed$predictors, max_predictors = 2)
 
   # Validate outcome.
   hardhat::validate_outcomes_are_univariate(processed$outcomes)
   hardhat::validate_outcomes_are_factors(processed$outcomes)
 
   predictors <- processed$predictors # tibble
-  outcome <- processed$outcomes[[1]] # factor-vector
+  outcome <- processed$outcomes[[1]] # factor
 
-  fit <- .bert_classification_impl(predictors, outcome)
+  fit <- .bert_classification_impl(predictors,
+                                   outcome,
+                                   model_name,
+                                   n_tokens,
+                                   ...)
 
   return(
     .new_bert_classification(
       luz_model = fit,
       outcome_levels = levels(outcome),
+      n_tokens = n_tokens,
       blueprint = processed$blueprint
     )
   )
@@ -137,28 +152,43 @@ bert_classification.recipe <- function(x, data, ...) {
 # ------------------------------------------------------------------------------
 # Implementation
 
-.bert_classification_impl <- function(predictors, outcome) {
-  ### Use the processed data to create a torch dataset.
+.bert_classification_impl <- function(predictors,
+                                      outcome,
+                                      model_name = "bert_tiny_uncased",
+                                      n_tokens = torchtransformers::config_bert(
+                                        model_name, "max_tokens"
+                                      ),
+                                      ...) {
+  # Make sure n_tokens is valid for this model.
+  n_tokens <- min(
+    n_tokens,
+    torchtransformers::config_bert(
+      model_name, "max_tokens"
+    )
+  )
+
+  # Use the processed data to create a torch dataset.
   torch_ready <- torchtransformers::dataset_bert(
     x = predictors,
-    y = outcome
+    y = outcome,
+    n_tokens = n_tokens
   )
 
-  # The number of levels defines the number of heads in the model.
+  # The number of levels defines the number of output dimensions in the model.
   n_levels <- length(levels(outcome))
-  bert_classifier <- model_bert_linear(
-    model_name = "bert_tiny_uncased",
-    output_dim = n_levels
-  )
 
   # Fit using {luz}.
-  fitted <- bert_classifier %>%
+  fitted <- model_bert_linear %>%
     luz::setup(
       loss = torch::nn_cross_entropy_loss(),
       optimizer = torch::optim_adam,
       metrics = list(
         luz::luz_metric_accuracy()
       )
+    ) %>%
+    luz::set_hparams(
+      model_name = model_name,
+      output_dim = n_levels
     ) %>%
     luz::fit(
       torch_ready,
@@ -174,11 +204,15 @@ bert_classification.recipe <- function(x, data, ...) {
 # ------------------------------------------------------------------------------
 # Constructor
 
-.new_bert_classification <- function(luz_model, outcome_levels, blueprint) {
+.new_bert_classification <- function(luz_model,
+                                     outcome_levels,
+                                     n_tokens,
+                                     blueprint) {
   return(
     hardhat::new_model(
       luz_model = luz_model,
       outcome_levels = outcome_levels,
+      n_tokens = n_tokens,
       blueprint = blueprint,
       class = "bert_classification"
     )

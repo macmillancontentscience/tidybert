@@ -105,20 +105,15 @@ options(old_timeout)
 We will use the `train` dataset to fit a simple classification model.
 
 ```{r fit}
-# Quick tests of different methods.
+# We'll fit small models by various methods, using a subset of the data.
 train_head <- head(mnli_tibbles$train, 150)
 
 entailment_fit_formula <- bert_classification(
   gold_label ~ sentence1 + sentence2, 
-  data = train_head
+  data = train_head,
+  model_name = "bert_small_uncased",
+  n_tokens = 128
 )
-
-# Doesn't work yet.
-# entailment_fit_recipe <- recipes::recipe(
-#   gold_label ~ sentence1 + sentence2,
-#   data = mnli_tibbles$train
-# ) %>% 
-#   bert_classification(data = mnli_tibbles$train)
 
 entailment_fit_dataframe <- bert_classification(
   x = dplyr::select(train_head, sentence1, sentence2),
