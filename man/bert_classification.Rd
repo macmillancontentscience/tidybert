@@ -15,24 +15,47 @@ bert_classification(x, ...)
 \method{bert_classification}{data.frame}(
   x,
   y,
+  valid_x = 0.1,
+  valid_y = NULL,
   model_name = "bert_tiny_uncased",
   n_tokens = torchtransformers::config_bert(model_name, "max_tokens"),
+  loss = torch::nn_cross_entropy_loss(),
+  optimizer = torch::optim_adam,
+  metrics = list(luz::luz_metric_accuracy()),
+  epochs = 10,
+  batch_size = 128,
+  luz_opt_hparams = list(),
   ...
 )
 
 \method{bert_classification}{matrix}(
   x,
   y,
+  valid_x = 0.1,
+  valid_y = NULL,
   model_name = "bert_tiny_uncased",
   n_tokens = torchtransformers::config_bert(model_name, "max_tokens"),
+  loss = torch::nn_cross_entropy_loss(),
+  optimizer = torch::optim_adam,
+  metrics = list(luz::luz_metric_accuracy()),
+  epochs = 10,
+  batch_size = 128,
+  luz_opt_hparams = list(),
   ...
 )
 
 \method{bert_classification}{formula}(
   formula,
   data,
+  valid_data = 0.1,
   model_name = "bert_tiny_uncased",
   n_tokens = torchtransformers::config_bert(model_name, "max_tokens"),
+  loss = torch::nn_cross_entropy_loss(),
+  optimizer = torch::optim_adam,
+  metrics = list(luz::luz_metric_accuracy()),
+  epochs = 10,
+  batch_size = 128,
+  luz_opt_hparams = list(),
   ...
 )
 }
@@ -55,11 +78,47 @@ specified as:
 \item A factor \strong{vector}.
 }}
 
+\item{valid_x}{Depending on the context:
+\itemize{
+\item A number between 0 and 1, representing the fraction of data to use for
+model validation.
+\item Predictors in the same format as \code{x}. These predictors will be used for
+model validation.
+\item \code{NULL}, in which case no data will be used for model validation.
+}}
+
+\item{valid_y}{When \code{valid_x} is a set of predictors, \code{valid_y} should be
+outcomes in the same format as \code{y}.}
+
 \item{model_name}{Character; which flavor of BERT to use. See
 \code{\link[torchtransformers]{available_berts}} for known models.}
 
 \item{n_tokens}{Integer scalar; the number of tokens expected for each
 example.}
+
+\item{loss}{(\code{function}, optional) An optional function with the signature
+\verb{function(input, target)}. It's only requires if your \code{nn_module} doesn't
+implement a method called \code{loss}.}
+
+\item{optimizer}{(\code{torch_optimizer}, optional) A function with the signature
+\verb{function(parameters, ...)} that is used to initialize an optimizer given
+the model parameters.}
+
+\item{metrics}{(\code{list}, optional) A list of metrics to be tracked during
+the training procedure.}
+
+\item{epochs}{(int) The maximum number of epochs for training the model.
+If a single value is provided, this is taken to be the \code{max_epochs} and
+\code{min_epochs} is set to 0. If a vector of two numbers is provided, the
+first value is \code{min_epochs} and the second value is \code{max_epochs}.
+The minimum and maximum number of epochs are included in the context
+object as \code{ctx$min_epochs} and \code{ctx$max_epochs}, respectively.}
+
+\item{batch_size}{(int, optional): how many samples per batch to load
+(default: \code{1}).}
+
+\item{luz_opt_hparams}{List; parameters to pass on to
+\code{\link[luz]{set_opt_hparams}} to initialize the optimizer.}
 
 \item{formula}{A formula specifying the outcome term on the left-hand side,
 and the predictor terms on the right-hand side.}
@@ -67,8 +126,16 @@ and the predictor terms on the right-hand side.}
 \item{data}{When a \strong{formula} is used, \code{data} is specified as:
 \itemize{
 \item A \strong{data frame} containing both the predictors and the outcome. The
-predictors should be character vectors. The outcome should be a factor,
-or a character vector.
+predictors should be character vectors. The outcome should be a factor.
+}}
+
+\item{valid_data}{When a \strong{formula} is used, \code{valid_data} can be:
+\itemize{
+\item A \strong{data frame} containing both the predictors and the outcome to be
+used for model validation, in the same format as \code{data}.
+\item A number between 0 and 1, representing the fraction of data to use for
+model validation.
+\item \code{NULL}, in which case no data will be used for model validation.
 }}
 }
 \value{

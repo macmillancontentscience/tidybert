@@ -115,7 +115,8 @@ entailment_fit_formula <- bert_classification(
   gold_label ~ sentence1 + sentence2, 
   data = train_head,
   model_name = "bert_tiny_uncased",
-  n_tokens = 128
+  n_tokens = 128,
+  epochs = 1
 )
 
 set.seed(1234)
@@ -124,7 +125,8 @@ entailment_fit_dataframe <- bert_classification(
   x = dplyr::select(train_head, sentence1, sentence2),
   y = train_head$gold_label,
   model_name = "bert_tiny_uncased",
-  n_tokens = 128
+  n_tokens = 128,
+  epochs = 1
 )
 
 set.seed(1234)
@@ -133,7 +135,8 @@ entailment_fit_matrix <- bert_classification(
   x = as.matrix(dplyr::select(train_head, sentence1, sentence2)),
   y = train_head$gold_label,
   model_name = "bert_tiny_uncased",
-  n_tokens = 128
+  n_tokens = 128,
+  epochs = 1
 )
 ```
 

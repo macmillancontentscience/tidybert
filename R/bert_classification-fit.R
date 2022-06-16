@@ -31,14 +31,31 @@
 #'   * A __matrix__ with 1 factor column.
 #'   * A factor __vector__.
 #'
+#' @param valid_x Depending on the context:
+#'   * A number between 0 and 1, representing the fraction of data to use for
+#'     model validation.
+#'   * Predictors in the same format as `x`. These predictors will be used for
+#'     model validation.
+#'   * `NULL`, in which case no data will be used for model validation.
+#'
+#' @param valid_y When `valid_x` is a set of predictors, `valid_y` should be
+#'   outcomes in the same format as `y`.
+#'
 #' @param data When a __formula__ is used, `data` is specified as:
 #'
 #'   * A __data frame__ containing both the predictors and the outcome. The
-#'     predictors should be character vectors. The outcome should be a factor,
-#'     or a character vector.
+#'     predictors should be character vectors. The outcome should be a factor.
 #'
 #' @param formula A formula specifying the outcome term on the left-hand side,
 #'   and the predictor terms on the right-hand side.
+#'
+#' @param valid_data When a __formula__ is used, `valid_data` can be:
+#'
+#'   * A __data frame__ containing both the predictors and the outcome to be
+#'     used for model validation, in the same format as `data`.
+#'   * A number between 0 and 1, representing the fraction of data to use for
+#'     model validation.
+#'   * `NULL`, in which case no data will be used for model validation.
 #'
 #' @inheritParams .bert_classification_bridge
 #'
@@ -66,13 +83,38 @@ bert_classification.default <- function(x, ...) {
 #' @rdname bert_classification
 bert_classification.data.frame <- function(x,
                                            y,
+                                           valid_x = 0.1,
+                                           valid_y = NULL,
                                            model_name = "bert_tiny_uncased",
                                            n_tokens = torchtransformers::config_bert(
                                              model_name, "max_tokens"
                                            ),
+                                           loss = torch::nn_cross_entropy_loss(),
+                                           optimizer = torch::optim_adam,
+                                           metrics = list(
+                                             luz::luz_metric_accuracy()
+                                           ),
+                                           epochs = 10,
+                                           batch_size = 128,
+                                           luz_opt_hparams = list(),
                                            ...) {
   processed <- hardhat::mold(x, y)
-  return(.bert_classification_bridge(processed, ...))
+  valid_data <- .mold_valid_xy(valid_x, valid_y, processed$blueprint)
+  return(
+    .bert_classification_bridge(
+      processed,
+      valid_data = valid_data,
+      model_name = model_name,
+      n_tokens = n_tokens,
+      loss = loss,
+      optimizer = optimizer,
+      metrics = metrics,
+      epochs = epochs,
+      batch_size = batch_size,
+      luz_opt_hparams = luz_opt_hparams,
+      ...
+    )
+  )
 }
 
 # XY method - matrix
@@ -81,13 +123,38 @@ bert_classification.data.frame <- function(x,
 #' @rdname bert_classification
 bert_classification.matrix <- function(x,
                                        y,
+                                       valid_x = 0.1,
+                                       valid_y = NULL,
                                        model_name = "bert_tiny_uncased",
                                        n_tokens = torchtransformers::config_bert(
                                          model_name, "max_tokens"
                                        ),
+                                       loss = torch::nn_cross_entropy_loss(),
+                                       optimizer = torch::optim_adam,
+                                       metrics = list(
+                                         luz::luz_metric_accuracy()
+                                       ),
+                                       epochs = 10,
+                                       batch_size = 128,
+                                       luz_opt_hparams = list(),
                                        ...) {
   processed <- hardhat::mold(x, y)
-  return(.bert_classification_bridge(processed, ...))
+  valid_data <- .mold_valid_xy(valid_x, valid_y, processed$blueprint)
+  return(
+    .bert_classification_bridge(
+      processed,
+      valid_data = valid_data,
+      model_name = model_name,
+      n_tokens = n_tokens,
+      loss = loss,
+      optimizer = optimizer,
+      metrics = metrics,
+      epochs = epochs,
+      batch_size = batch_size,
+      luz_opt_hparams = luz_opt_hparams,
+      ...
+    )
+  )
 }
 
 # Formula method
@@ -96,10 +163,19 @@ bert_classification.matrix <- function(x,
 #' @rdname bert_classification
 bert_classification.formula <- function(formula,
                                         data,
+                                        valid_data = 0.1,
                                         model_name = "bert_tiny_uncased",
                                         n_tokens = torchtransformers::config_bert(
                                           model_name, "max_tokens"
                                         ),
+                                        loss = torch::nn_cross_entropy_loss(),
+                                        optimizer = torch::optim_adam,
+                                        metrics = list(
+                                          luz::luz_metric_accuracy()
+                                        ),
+                                        epochs = 10,
+                                        batch_size = 128,
+                                        luz_opt_hparams = list(),
                                         ...) {
   processed <- hardhat::mold(
     formula, data,
@@ -107,8 +183,52 @@ bert_classification.formula <- function(formula,
     # columns!
     blueprint = hardhat::default_formula_blueprint(indicators = "none")
   )
-  return(.bert_classification_bridge(processed, ...))
+  valid_data <- .mold_valid_formula(
+    formula, valid_data, processed$blueprint
+  )
+
+  return(
+    .bert_classification_bridge(
+      processed,
+      valid_data = valid_data,
+      model_name = model_name,
+      n_tokens = n_tokens,
+      loss = loss,
+      optimizer = optimizer,
+      metrics = metrics,
+      epochs = epochs,
+      batch_size = batch_size,
+      luz_opt_hparams = luz_opt_hparams,
+      ...
+    )
+  )
 }
+
+.mold_valid_xy <- function(valid_x, valid_y, blueprint) {
+  if (is.numeric(valid_x) && length(valid_x) == 1) {
+    return(valid_x)
+  } else {
+    return(
+      hardhat::mold(
+        valid_x, valid_y, blueprint = blueprint
+      )
+    )
+  }
+}
+
+.mold_valid_formula <- function(formula, valid_data, blueprint) {
+  if (is.numeric(valid_data) && length(valid_data) == 1) {
+    return(valid_data)
+  } else {
+    return(
+      hardhat::mold(
+        formula, valid_data, blueprint = blueprint
+      )
+    )
+  }
+}
+
+
 
 # ------------------------------------------------------------------------------
 # Bridge
@@ -121,10 +241,19 @@ bert_classification.formula <- function(formula,
 #' @return A bert_classification model object.
 #' @keywords internal
 .bert_classification_bridge <- function(processed,
+                                        valid_data = 0.1,
                                         model_name = "bert_tiny_uncased",
                                         n_tokens = torchtransformers::config_bert(
                                           model_name, "max_tokens"
                                         ),
+                                        loss = torch::nn_cross_entropy_loss(),
+                                        optimizer = torch::optim_adam,
+                                        metrics = list(
+                                          luz::luz_metric_accuracy()
+                                        ),
+                                        epochs = 10,
+                                        batch_size = 128,
+                                        luz_opt_hparams = list(),
                                         ...) {
   #### Validate processed data.
 
@@ -139,11 +268,20 @@ bert_classification.formula <- function(formula,
   predictors <- processed$predictors # tibble
   outcome <- processed$outcomes[[1]] # factor
 
-  fit <- .bert_classification_impl(predictors,
-                                   outcome,
-                                   model_name,
-                                   n_tokens,
-                                   ...)
+  fit <- .bert_classification_impl(
+    predictors,
+    outcome,
+    valid_data = valid_data,
+    model_name = model_name,
+    n_tokens = n_tokens,
+    loss = loss,
+    optimizer = optimizer,
+    metrics = metrics,
+    epochs = epochs,
+    batch_size = batch_size,
+    luz_opt_hparams = luz_opt_hparams,
+    ...
+  )
 
   return(
     .new_bert_classification(
@@ -163,18 +301,33 @@ bert_classification.formula <- function(formula,
 #'
 #' @param predictors A tibble containing one or two character columns.
 #' @param outcome A factor of output classes associated with the predictors.
+#' @param ... Currently unused but included to expand into more luz options.
+#' @param valid_data Either a number between 0 and 1, or a
+#' @param luz_opt_hparams List; parameters to pass on to
+#'   \code{\link[luz]{set_opt_hparams}} to initialize the optimizer.
 #' @inheritParams model_bert_linear
 #' @inheritParams torchtransformers::dataset_bert
-#' @param ... Currently unused but included to expand into more luz options.
+#' @inheritParams luz::setup
+#' @inheritParams luz::fit.luz_module_generator
+#' @inheritParams torch::dataloader
 #'
 #' @return The fitted model with class `luz_module_fitted`.
 #' @keywords internal
 .bert_classification_impl <- function(predictors,
                                       outcome,
+                                      valid_data = 0.1,
                                       model_name = "bert_tiny_uncased",
                                       n_tokens = torchtransformers::config_bert(
                                         model_name, "max_tokens"
                                       ),
+                                      loss = torch::nn_cross_entropy_loss(),
+                                      optimizer = torch::optim_adam,
+                                      metrics = list(
+                                        luz::luz_metric_accuracy()
+                                      ),
+                                      epochs = 10,
+                                      batch_size = 128,
+                                      luz_opt_hparams = list(),
                                       ...) {
   # Make sure n_tokens is valid for this model.
   n_tokens <- min(
@@ -195,24 +348,25 @@ bert_classification.formula <- function(formula,
   n_levels <- length(levels(outcome))
 
   # Fit using {luz}.
-  fitted <- model_bert_linear %>%
-    luz::setup(
-      loss = torch::nn_cross_entropy_loss(),
-      optimizer = torch::optim_adam,
-      metrics = list(
-        luz::luz_metric_accuracy()
-      )
-    ) %>%
-    luz::set_hparams(
-      model_name = model_name,
-      output_dim = n_levels
-    ) %>%
-    luz::fit(
-      torch_ready,
-      epochs = 1,
-      valid_data = 0.1,
-      dataloader_options = list(batch_size = 128L)
-    )
+  fitted <- luz::setup(
+    model_bert_linear,
+    loss = loss,
+    optimizer = optimizer,
+    metrics = metrics
+  )
+  fitted <- luz::set_hparams(
+    fitted,
+    model_name = model_name,
+    output_dim = n_levels
+  )
+  fitted <- luz::set_opt_hparams(fitted, !!!luz_opt_hparams)
+  fitted <- luz::fit(
+    fitted,
+    torch_ready,
+    epochs = epochs,
+    valid_data = valid_data,
+    dataloader_options = list(batch_size = batch_size)
+  )
 
   return(fitted)
 }
