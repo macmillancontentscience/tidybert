@@ -37,7 +37,7 @@ predict.bert_classification <- function(object,
                                         type = c("class", "prob"),
                                         ...) {
   forged <- hardhat::forge(new_data, object$blueprint)
-  rlang::arg_match(type, .valid_bert_classification_predict_types())
+  type <- match.arg(type)
   return(.predict_bert_classification_bridge(type, object, forged$predictors))
 }
 

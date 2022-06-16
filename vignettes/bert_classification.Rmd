@@ -103,56 +103,67 @@ options(old_timeout)
 ## Fit the Model
 
 We will use the `train` dataset to fit a simple classification model.
+We'll fit small models by various methods, using a subset of the data. 
+We'll reset seeds each time to confirm that the models are identical.
 
 ```{r fit}
-# We'll fit small models by various methods, using a subset of the data.
 train_head <- head(mnli_tibbles$train, 150)
 
+set.seed(1234)
+torch::torch_manual_seed(1234)
 entailment_fit_formula <- bert_classification(
   gold_label ~ sentence1 + sentence2, 
   data = train_head,
-  model_name = "bert_small_uncased",
+  model_name = "bert_tiny_uncased",
   n_tokens = 128
 )
 
+set.seed(1234)
+torch::torch_manual_seed(1234)
 entailment_fit_dataframe <- bert_classification(
   x = dplyr::select(train_head, sentence1, sentence2),
-  y = train_head$gold_label
+  y = train_head$gold_label,
+  model_name = "bert_tiny_uncased",
+  n_tokens = 128
 )
 
+set.seed(1234)
+torch::torch_manual_seed(1234)
 entailment_fit_matrix <- bert_classification(
   x = as.matrix(dplyr::select(train_head, sentence1, sentence2)),
-  y = train_head$gold_label
-)
-
-identical(
-  torch::as_array(entailment_fit_formula$tokenized_text), 
-  torch::as_array(entailment_fit_dataframe$tokenized_text)
-)
-identical(
-  torch::as_array(entailment_fit_formula$tokenized_text), 
-  torch::as_array(entailment_fit_matrix$tokenized_text)
-)
-
-identical(
-  torch::as_array(entailment_fit_formula$y), 
-  torch::as_array(entailment_fit_dataframe$y)
-)
-identical(
-  torch::as_array(entailment_fit_formula$y), 
-  torch::as_array(entailment_fit_matrix$y)
+  y = train_head$gold_label,
+  model_name = "bert_tiny_uncased",
+  n_tokens = 128
 )
 ```
 
+## Make Predictions
+
+Pass in new data to make predictions.
+The predictions can be in the form of the predicted label (default), or the class probabilities.
+
 ```{r predict}
-entailment_predictions <- predict(
+entailment_predictions_formula <- predict(
   entailment_fit_formula,
   new_data = head(mnli_tibbles$dev_matched)
 )
 
-entailment_probs <- predict(
+entailment_probs_formula <- predict(
   entailment_fit_formula,
   new_data = head(mnli_tibbles$dev_matched),
   type = "prob"
 )
+entailment_probs_dataframe <- predict(
+  entailment_fit_dataframe,
+  new_data = head(mnli_tibbles$dev_matched),
+  type = "prob"
+)
+entailment_probs_matrix <- predict(
+  entailment_fit_matrix,
+  new_data = head(mnli_tibbles$dev_matched),
+  type = "prob"
+)
+
+identical(entailment_probs_formula, entailment_probs_dataframe)
+identical(entailment_probs_formula, entailment_probs_matrix)
 ```
