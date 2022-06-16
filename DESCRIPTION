@@ -25,9 +25,11 @@ RoxygenNote: 7.2.0
 Imports: 
     glue,
     hardhat,
+    luz,
     magrittr,
     purrr,
     rlang,
+    torch,
     torchtransformers (>= 0.0.0.9200)
 Remotes:
     macmillancontentscience/torchtransformers
