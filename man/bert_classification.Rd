@@ -35,7 +35,10 @@ bert_classification(
 currently work.
 }}
 
-\item{...}{Not currently used, but required for extensibility.}
+\item{model_name}{Character; which flavor of BERT to use. See
+\code{\link[torchtransformers]{available_berts}} for known models.}
+
+\item{...}{Additional parameters to pass to methods or to luz for fitting.}
 
 \item{y}{When \code{x} is a \strong{data frame} or \strong{matrix}, \code{y} is the outcome
 specified as:

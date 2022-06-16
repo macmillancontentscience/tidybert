@@ -40,7 +40,9 @@
 #' @param formula A formula specifying the outcome term on the left-hand side,
 #'   and the predictor terms on the right-hand side.
 #'
-#' @param ... Not currently used, but required for extensibility.
+#' @param ... Additional parameters to pass to methods or to luz for fitting.
+#'
+#' @inheritParams .bert_classification_bridge
 #'
 #' @return A `bert_classification` object.
 #'
@@ -113,6 +115,13 @@ bert_classification.recipe <- function(x, data, ...) {
 # ------------------------------------------------------------------------------
 # Bridge
 
+#' Bridge between hardhat and Implementation
+#'
+#' @inheritParams .bert_classification_impl
+#' @param processed Processed inputs molded by hardhat.
+#'
+#' @return A bert_classification model object.
+#' @keywords internal
 .bert_classification_bridge <- function(processed,
                                         model_name = "bert_tiny_uncased",
                                         n_tokens = torchtransformers::config_bert(
@@ -152,6 +161,15 @@ bert_classification.recipe <- function(x, data, ...) {
 # ------------------------------------------------------------------------------
 # Implementation
 
+#' Create and Fit the Model
+#'
+#' @param predictors A tibble containing one or two character columns.
+#' @param outcome A factor of output classes associated with the predictors.
+#' @inheritParams model_bert_linear
+#' @param ... Currently unused but included to expand into more luz options.
+#'
+#' @return The fitted model with class `luz_module_fitted`.
+#' @keywords internal
 .bert_classification_impl <- function(predictors,
                                       outcome,
                                       model_name = "bert_tiny_uncased",
