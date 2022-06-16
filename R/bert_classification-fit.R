@@ -21,8 +21,8 @@
 #'
 #'   * A __data frame__ of character predictors.
 #'   * A __matrix__ of character predictors.
-#'   * A __recipe__ specifying a set of preprocessing steps created from
-#'   [recipes::recipe()].
+#'   * Note that a __recipe__ created from [recipes::recipe()] will NOT
+#'     currently work.
 #'
 #' @param y When `x` is a __data frame__ or __matrix__, `y` is the outcome
 #'   specified as:
@@ -31,12 +31,13 @@
 #'   * A __matrix__ with 1 factor column.
 #'   * A factor __vector__.
 #'
-#' @param data When a __recipe__ or __formula__ is used, `data` is specified as:
+#' @param data When a __formula__ is used, `data` is specified as:
 #'
 #'   * A __data frame__ containing both the predictors and the outcome. The
-#'   outcome should be a factor, or a character vector.
+#'     predictors should be character vectors. The outcome should be a factor,
+#'     or a character vector.
 #'
-#' @param formula A formula specifying the outcome terms on the left-hand side,
+#' @param formula A formula specifying the outcome term on the left-hand side,
 #'   and the predictor terms on the right-hand side.
 #'
 #' @param ... Not currently used, but required for extensibility.
@@ -94,11 +95,14 @@ bert_classification.formula <- function(formula, data, ...) {
 #' @export
 #' @rdname bert_classification
 bert_classification.recipe <- function(x, data, ...) {
-  processed <- hardhat::mold(
-    x, data,
-    blueprint = hardhat::default_recipe_blueprint(allow_novel_levels = TRUE)
+  # Recipe predictors are always converted to factors during prep/bake. We need
+  # them to still be character so we can make sure they're tokenized properly
+  # for the specified model, so this can't work yet.
+
+  stop(
+    "`bert_classification()` is not defined for a 'recipe'.",
+    call. = FALSE
   )
-  return(.bert_classification_bridge(processed, ...))
 }
 
 # ------------------------------------------------------------------------------
@@ -116,24 +120,14 @@ bert_classification.recipe <- function(x, data, ...) {
   hardhat::validate_outcomes_are_factors(processed$outcomes)
 
   predictors <- processed$predictors # tibble
-  outcome <- processed$outcomes[[1]] # vector
-
-  ### Use the processed data to create a torch dataset.
-
-
-  return(
-    list(
-      predictors = predictors,
-      outcome = outcome
-    )
-  )
-
+  outcome <- processed$outcomes[[1]] # factor-vector
 
   fit <- .bert_classification_impl(predictors, outcome)
 
   return(
     .new_bert_classification(
-      coefs = fit$coefs,
+      luz_model = fit,
+      outcome_levels = levels(outcome),
       blueprint = processed$blueprint
     )
   )
@@ -144,17 +138,47 @@ bert_classification.recipe <- function(x, data, ...) {
 # Implementation
 
 .bert_classification_impl <- function(predictors, outcome) {
-  return(list(coefs = 1))
+  ### Use the processed data to create a torch dataset.
+  torch_ready <- torchtransformers::dataset_bert(
+    x = predictors,
+    y = outcome
+  )
+
+  # The number of levels defines the number of heads in the model.
+  n_levels <- length(levels(outcome))
+  bert_classifier <- model_bert_linear(
+    model_name = "bert_tiny_uncased",
+    output_dim = n_levels
+  )
+
+  # Fit using {luz}.
+  fitted <- bert_classifier %>%
+    luz::setup(
+      loss = torch::nn_cross_entropy_loss(),
+      optimizer = torch::optim_adam,
+      metrics = list(
+        luz::luz_metric_accuracy()
+      )
+    ) %>%
+    luz::fit(
+      torch_ready,
+      epochs = 1,
+      valid_data = 0.1,
+      dataloader_options = list(batch_size = 128L)
+    )
+
+  return(fitted)
 }
 
 
 # ------------------------------------------------------------------------------
 # Constructor
 
-.new_bert_classification <- function(coefs, blueprint) {
+.new_bert_classification <- function(luz_model, outcome_levels, blueprint) {
   return(
     hardhat::new_model(
-      coefs = coefs,
+      luz_model = luz_model,
+      outcome_levels = outcome_levels,
       blueprint = blueprint,
       class = "bert_classification"
     )

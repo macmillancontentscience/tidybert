@@ -26,8 +26,8 @@ bert_classification(x, ...)
 \itemize{
 \item A \strong{data frame} of character predictors.
 \item A \strong{matrix} of character predictors.
-\item A \strong{recipe} specifying a set of preprocessing steps created from
-\code{\link[recipes:recipe]{recipes::recipe()}}.
+\item Note that a \strong{recipe} created from \code{\link[recipes:recipe]{recipes::recipe()}} will NOT
+currently work.
 }}
 
 \item{...}{Not currently used, but required for extensibility.}
@@ -40,13 +40,14 @@ specified as:
 \item A factor \strong{vector}.
 }}
 
-\item{formula}{A formula specifying the outcome terms on the left-hand side,
+\item{formula}{A formula specifying the outcome term on the left-hand side,
 and the predictor terms on the right-hand side.}
 
-\item{data}{When a \strong{recipe} or \strong{formula} is used, \code{data} is specified as:
+\item{data}{When a \strong{formula} is used, \code{data} is specified as:
 \itemize{
 \item A \strong{data frame} containing both the predictors and the outcome. The
-outcome should be a factor, or a character vector.
+predictors should be character vectors. The outcome should be a factor,
+or a character vector.
 }}
 }
 \value{

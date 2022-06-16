@@ -106,10 +106,11 @@ We will use the `train` dataset to fit a simple classification model.
 
 ```{r fit}
 # Quick tests of different methods.
+train_head <- head(mnli_tibbles$train, 150)
 
 entailment_fit_formula <- bert_classification(
   gold_label ~ sentence1 + sentence2, 
-  data = mnli_tibbles$train
+  data = train_head
 )
 
 # Doesn't work yet.
@@ -120,26 +121,43 @@ entailment_fit_formula <- bert_classification(
 #   bert_classification(data = mnli_tibbles$train)
 
 entailment_fit_dataframe <- bert_classification(
-  x = dplyr::select(mnli_tibbles$train, sentence1, sentence2),
-  y = mnli_tibbles$train$gold_label
+  x = dplyr::select(train_head, sentence1, sentence2),
+  y = train_head$gold_label
 )
 
 entailment_fit_matrix <- bert_classification(
-  x = as.matrix(dplyr::select(mnli_tibbles$train, sentence1, sentence2)),
-  y = mnli_tibbles$train$gold_label
+  x = as.matrix(dplyr::select(train_head, sentence1, sentence2)),
+  y = train_head$gold_label
 )
 
 identical(
-  entailment_fit_formula$predictors, entailment_fit_dataframe$predictors
+  torch::as_array(entailment_fit_formula$tokenized_text), 
+  torch::as_array(entailment_fit_dataframe$tokenized_text)
 )
 identical(
-  entailment_fit_formula$predictors, entailment_fit_matrix$predictors
+  torch::as_array(entailment_fit_formula$tokenized_text), 
+  torch::as_array(entailment_fit_matrix$tokenized_text)
 )
 
-# Right now the gold_labels name gets replaced sometimes, but doesn't matter.
-names(entailment_fit_formula$outcomes) <- "gold_labels"
-names(entailment_fit_dataframe$outcomes) <- "gold_labels"
-names(entailment_fit_matrix$outcomes) <- "gold_labels"
-identical(entailment_fit_formula$outcomes, entailment_fit_dataframe$outcomes)
-identical(entailment_fit_formula$outcomes, entailment_fit_matrix$outcomes)
+identical(
+  torch::as_array(entailment_fit_formula$y), 
+  torch::as_array(entailment_fit_dataframe$y)
+)
+identical(
+  torch::as_array(entailment_fit_formula$y), 
+  torch::as_array(entailment_fit_matrix$y)
+)
+```
+
+```{r predict}
+entailment_predictions <- predict(
+  entailment_fit_formula,
+  new_data = head(mnli_tibbles$dev_matched)
+)
+
+entailment_probs <- predict(
+  entailment_fit_formula,
+  new_data = head(mnli_tibbles$dev_matched),
+  type = "prob"
+)
 ```

@@ -28,7 +28,7 @@ Imports:
     magrittr,
     purrr,
     rlang,
-    torchtransformers
+    torchtransformers (>= 0.0.0.9200)
 Remotes:
     macmillancontentscience/torchtransformers
 Suggests: 

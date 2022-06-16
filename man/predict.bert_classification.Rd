@@ -4,7 +4,7 @@
 \alias{predict.bert_classification}
 \title{Predict from a \code{bert_classification}}
 \usage{
-\method{predict}{bert_classification}(object, new_data, type = "class", ...)
+\method{predict}{bert_classification}(object, new_data, type = c("class", "prob"), ...)
 }
 \arguments{
 \item{object}{A \code{bert_classification} object.}
@@ -15,7 +15,7 @@
 Valid options are:
 \itemize{
 \item \code{"class"} for "hard" class predictions.
-\item \code{"prob"} for class probabilities. (NOT IMPLEMENTED AT ALL YET)
+\item \code{"prob"} for class probabilities.
 }}
 
 \item{...}{Not used, but required for extensibility.}
