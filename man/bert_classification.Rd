@@ -6,25 +6,35 @@
 \alias{bert_classification.data.frame}
 \alias{bert_classification.matrix}
 \alias{bert_classification.formula}
-\alias{bert_classification.recipe}
 \title{Fit a BERT-style neural network}
 \usage{
-bert_classification(
+bert_classification(x, ...)
+
+\method{bert_classification}{default}(x, ...)
+
+\method{bert_classification}{data.frame}(
   x,
+  y,
   model_name = "bert_tiny_uncased",
   n_tokens = torchtransformers::config_bert(model_name, "max_tokens"),
   ...
 )
 
-\method{bert_classification}{default}(x, ...)
+\method{bert_classification}{matrix}(
+  x,
+  y,
+  model_name = "bert_tiny_uncased",
+  n_tokens = torchtransformers::config_bert(model_name, "max_tokens"),
+  ...
+)
 
-\method{bert_classification}{data.frame}(x, y, ...)
-
-\method{bert_classification}{matrix}(x, y, ...)
-
-\method{bert_classification}{formula}(formula, data, ...)
-
-\method{bert_classification}{recipe}(x, data, ...)
+\method{bert_classification}{formula}(
+  formula,
+  data,
+  model_name = "bert_tiny_uncased",
+  n_tokens = torchtransformers::config_bert(model_name, "max_tokens"),
+  ...
+)
 }
 \arguments{
 \item{x}{Depending on the context:
@@ -35,9 +45,6 @@ bert_classification(
 currently work.
 }}
 
-\item{model_name}{Character; which flavor of BERT to use. See
-\code{\link[torchtransformers]{available_berts}} for known models.}
-
 \item{...}{Additional parameters to pass to methods or to luz for fitting.}
 
 \item{y}{When \code{x} is a \strong{data frame} or \strong{matrix}, \code{y} is the outcome
@@ -47,6 +54,12 @@ specified as:
 \item A \strong{matrix} with 1 factor column.
 \item A factor \strong{vector}.
 }}
+
+\item{model_name}{Character; which flavor of BERT to use. See
+\code{\link[torchtransformers]{available_berts}} for known models.}
+
+\item{n_tokens}{Integer scalar; the number of tokens expected for each
+example.}
 
 \item{formula}{A formula specifying the outcome term on the left-hand side,
 and the predictor terms on the right-hand side.}

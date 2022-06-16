@@ -20,6 +20,9 @@
 \item{model_name}{Character; which flavor of BERT to use. See
 \code{\link[torchtransformers]{available_berts}} for known models.}
 
+\item{n_tokens}{Integer scalar; the number of tokens expected for each
+example.}
+
 \item{...}{Currently unused but included to expand into more luz options.}
 }
 \value{

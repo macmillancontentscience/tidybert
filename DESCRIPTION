@@ -29,6 +29,7 @@ Imports:
     magrittr,
     purrr,
     rlang,
+    stats,
     torch,
     torchtransformers (>= 0.0.0.9200)
 Remotes:

@@ -40,19 +40,14 @@
 #' @param formula A formula specifying the outcome term on the left-hand side,
 #'   and the predictor terms on the right-hand side.
 #'
-#' @param ... Additional parameters to pass to methods or to luz for fitting.
-#'
 #' @inheritParams .bert_classification_bridge
+#'
+#' @param ... Additional parameters to pass to methods or to luz for fitting.
 #'
 #' @return A `bert_classification` object.
 #'
 #' @export
-bert_classification <- function(x,
-                                model_name = "bert_tiny_uncased",
-                                n_tokens = torchtransformers::config_bert(
-                                  model_name, "max_tokens"
-                                ),
-                                ...) {
+bert_classification <- function(x, ...) {
   UseMethod("bert_classification")
 }
 
@@ -69,7 +64,13 @@ bert_classification.default <- function(x, ...) {
 
 #' @export
 #' @rdname bert_classification
-bert_classification.data.frame <- function(x, y, ...) {
+bert_classification.data.frame <- function(x,
+                                           y,
+                                           model_name = "bert_tiny_uncased",
+                                           n_tokens = torchtransformers::config_bert(
+                                             model_name, "max_tokens"
+                                           ),
+                                           ...) {
   processed <- hardhat::mold(x, y)
   return(.bert_classification_bridge(processed, ...))
 }
@@ -78,7 +79,13 @@ bert_classification.data.frame <- function(x, y, ...) {
 
 #' @export
 #' @rdname bert_classification
-bert_classification.matrix <- function(x, y, ...) {
+bert_classification.matrix <- function(x,
+                                       y,
+                                       model_name = "bert_tiny_uncased",
+                                       n_tokens = torchtransformers::config_bert(
+                                         model_name, "max_tokens"
+                                       ),
+                                       ...) {
   processed <- hardhat::mold(x, y)
   return(.bert_classification_bridge(processed, ...))
 }
@@ -87,7 +94,13 @@ bert_classification.matrix <- function(x, y, ...) {
 
 #' @export
 #' @rdname bert_classification
-bert_classification.formula <- function(formula, data, ...) {
+bert_classification.formula <- function(formula,
+                                        data,
+                                        model_name = "bert_tiny_uncased",
+                                        n_tokens = torchtransformers::config_bert(
+                                          model_name, "max_tokens"
+                                        ),
+                                        ...) {
   processed <- hardhat::mold(
     formula, data,
     # The predictors should be text, so don't blow them up into a zillion
@@ -95,21 +108,6 @@ bert_classification.formula <- function(formula, data, ...) {
     blueprint = hardhat::default_formula_blueprint(indicators = "none")
   )
   return(.bert_classification_bridge(processed, ...))
-}
-
-# Recipe method
-
-#' @export
-#' @rdname bert_classification
-bert_classification.recipe <- function(x, data, ...) {
-  # Recipe predictors are always converted to factors during prep/bake. We need
-  # them to still be character so we can make sure they're tokenized properly
-  # for the specified model, so this can't work yet.
-
-  stop(
-    "`bert_classification()` is not defined for a 'recipe'.",
-    call. = FALSE
-  )
 }
 
 # ------------------------------------------------------------------------------
@@ -166,6 +164,7 @@ bert_classification.recipe <- function(x, data, ...) {
 #' @param predictors A tibble containing one or two character columns.
 #' @param outcome A factor of output classes associated with the predictors.
 #' @inheritParams model_bert_linear
+#' @inheritParams torchtransformers::dataset_bert
 #' @param ... Currently unused but included to expand into more luz options.
 #'
 #' @return The fitted model with class `luz_module_fitted`.
