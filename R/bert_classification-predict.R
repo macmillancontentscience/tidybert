@@ -41,13 +41,16 @@ predict.bert_classification <- function(object,
   return(.predict_bert_classification_bridge(type, object, forged$predictors))
 }
 
-.valid_bert_classification_predict_types <- function() {
-  return(c("class", "prob"))
-}
-
 # ------------------------------------------------------------------------------
 # Bridge
 
+#' Prepare BERT Classification Data for Prediction
+#'
+#' @inheritParams predict.bert_classification
+#' @param predictors Forged predictor data.
+#'
+#' @return A tibble with output dependent on the type.
+#' @keywords internal
 .predict_bert_classification_bridge <- function(type, object, predictors) {
   predictors_ds <- torchtransformers::dataset_bert(
     x = predictors,
@@ -63,6 +66,12 @@ predict.bert_classification <- function(object,
   return(predictions)
 }
 
+#' Choose the Proper Prediction Function for BERT Classification
+#'
+#' @inheritParams predict.bert_classification
+#'
+#' @return The predict function.
+#' @keywords internal
 .get_bert_classification_predict_function <- function(type) {
   return(
     switch(
@@ -76,6 +85,12 @@ predict.bert_classification <- function(object,
 # ------------------------------------------------------------------------------
 # Implementation
 
+#' Shared Prediction for BERT Classification
+#'
+#' @inheritParams .predict_bert_classification_bridge
+#'
+#' @return A torch tensor of softmax probabilities.
+#' @keywords internal
 .predict_bert_classification_shared <- function(object, predictors) {
   # Get the prediction output and apply softmax.
   return(
@@ -86,6 +101,12 @@ predict.bert_classification <- function(object,
   )
 }
 
+#' Get Class for BERT Classification
+#'
+#' @inheritParams .predict_bert_classification_bridge
+#'
+#' @return A tibble with a factor column identifying the most probable outcome.
+#' @keywords internal
 .predict_bert_classification_class <- function(object, predictors) {
   predictions <- torch::torch_argmax(
     .predict_bert_classification_shared(object, predictors),
@@ -103,6 +124,12 @@ predict.bert_classification <- function(object,
   return(hardhat::spruce_class(predictions))
 }
 
+#' Get Probabilities for BERT Classification
+#'
+#' @inheritParams .predict_bert_classification_bridge
+#'
+#' @return A tibble of probabilities.
+#' @keywords internal
 .predict_bert_classification_prob <- function(object, predictors) {
   predictions <- .predict_bert_classification_shared(object, predictors)
 

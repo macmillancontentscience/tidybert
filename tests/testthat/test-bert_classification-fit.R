@@ -1,0 +1,126 @@
+x1 <- letters
+x2 <- rev(letters)
+y <- factor(rep(c("a", "b"), 13))
+
+train_df <- dplyr::tibble(
+  x1 = x1,
+  x2 = x2,
+  y = y
+)
+set.seed(1234)
+validation_data <- dplyr::sample_n(train_df, 7)
+
+test_that("fitting bert_classification works for dfs", {
+  set.seed(1234)
+  torch::torch_manual_seed(1234)
+  test_result <- bert_classification(
+    x = dplyr::select(train_df, x1, x2),
+    y = dplyr::select(train_df, y),
+    n_tokens = 5L,
+    epochs = 1L
+  )
+  # Times can change.
+  test_result$luz_model$records$profile <- NULL
+  expect_snapshot(test_result)
+
+  set.seed(1234)
+  torch::torch_manual_seed(1234)
+  test_result <- bert_classification(
+    x = dplyr::select(train_df, x1, x2),
+    y = y,
+    n_tokens = 5L,
+    epochs = 1L
+  )
+  # Times can change.
+  test_result$luz_model$records$profile <- NULL
+  expect_snapshot(test_result)
+
+  set.seed(1234)
+  torch::torch_manual_seed(1234)
+  test_result <- bert_classification(
+    x = dplyr::select(train_df, x1, x2),
+    y = y,
+    valid_x = dplyr::select(validation_data, x1, x2),
+    valid_y = validation_data$y,
+    n_tokens = 5L,
+    epochs = 1L
+  )
+  # Times can change.
+  test_result$luz_model$records$profile <- NULL
+  expect_snapshot(test_result)
+
+  expect_error(
+    bert_classification(
+      x = dplyr::select(train_df, x1, x2),
+      y = y,
+      valid_x = dplyr::select(validation_data, x1, x2),
+      valid_y = NULL,
+      n_tokens = 5L,
+      epochs = 1L
+    ),
+    regexp = "Please provide both",
+    class = "bad_valid_data"
+  )
+})
+
+test_that("fitting bert_classification works for matrices", {
+  train_matrix <- as.matrix(
+    dplyr::select(train_df, x1, x2)
+  )
+  set.seed(1234)
+  torch::torch_manual_seed(1234)
+  test_result <- bert_classification(
+    x = train_matrix,
+    y = y,
+    n_tokens = 5L,
+    epochs = 1L
+  )
+  # Times can change.
+  test_result$luz_model$records$profile <- NULL
+  expect_snapshot(test_result)
+})
+
+test_that("fitting bert_classification works for formulas", {
+  set.seed(1234)
+  torch::torch_manual_seed(1234)
+  test_result <- bert_classification(
+    y ~ x1 + x2,
+    train_df,
+    n_tokens = 5L,
+    epochs = 1L
+  )
+  # Times can change.
+  test_result$luz_model$records$profile <- NULL
+  expect_snapshot(test_result)
+
+  set.seed(1234)
+  torch::torch_manual_seed(1234)
+  test_result <- bert_classification(
+    y ~ x1 + x2,
+    train_df,
+    valid_data = validation_data,
+    n_tokens = 5L,
+    epochs = 1L
+  )
+  # Times can change.
+  test_result$luz_model$records$profile <- NULL
+  expect_snapshot(test_result)
+
+  expect_error(
+    bert_classification(
+      y ~ x1 + x2,
+      train_df,
+      valid_data = dplyr::select(validation_data, x1, x2),
+      n_tokens = 5L,
+      epochs = 1L
+    ),
+    regexp = "outcomes were not found"
+  )
+})
+
+test_that("fitting bert_classification fails gracefully", {
+  expect_error(
+    bert_classification(1:10),
+    regexp = "is not defined for a 'integer'"
+  )
+})

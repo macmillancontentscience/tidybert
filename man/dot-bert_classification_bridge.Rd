@@ -21,7 +21,8 @@
 \arguments{
 \item{processed}{Processed inputs molded by hardhat.}
 
-\item{valid_data}{Either a number between 0 and 1, or a}
+\item{valid_data}{Either a number between 0 and 1, or a blueprint-processed
+dataset.}
 
 \item{model_name}{Character; which flavor of BERT to use. See
 \code{\link[torchtransformers]{available_berts}} for known models.}
