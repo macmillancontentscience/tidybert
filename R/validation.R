@@ -12,6 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#' Identify Non-Character Predictors
+#'
+#' @param predictors "Data-like" predictors, in this case always a tibble of
+#'   predictors (but also works for dfs).
+#'
+#' @return A list with elements `ok` (whether the check passes) and
+#'   `bad_classes` (a named list of any bad classes, where the name is the name
+#'   of the column, and the value is the class).
+#' @keywords internal
 .check_predictors_are_character <- function(predictors) {
   # This is based on hardhat::check_predictors_are_numeric. We want to make sure
   # the predictors are all character, which is a case hardhat didn't anticipate.
@@ -22,7 +31,10 @@
   where_character <- purrr::map_lgl(predictors, is.character)
   ok <- all(where_character)
   if (!ok) {
-    bad_classes <- hardhat::get_data_classes(predictors[, !where_character])
+    bad_classes <- hardhat::get_data_classes(
+      # Specify not to drop the extra dimension so it works for plain dfs.
+      predictors[, !where_character, drop = FALSE]
+    )
   }
   else {
     bad_classes <- list()
@@ -35,6 +47,12 @@
   )
 }
 
+#' Confirm that Predictors are Character
+#'
+#' @inheritParams .check_predictors_are_character
+#'
+#' @return `predictors` (invisibly), or an error identifying bad columns.
+#' @keywords internal
 .validate_predictors_are_character <- function(predictors) {
   check <- .check_predictors_are_character(predictors)
   if (!check$ok) {
@@ -52,12 +70,20 @@
         "{bad_msg}",
         .sep = ""
       ),
-      class = "bad_predictor_classes"
+      class = "bad_predictor_classes",
+      call = rlang::caller_env()
     )
   }
   return(invisible(predictors))
 }
 
+#' Confirm the Number of Predictors
+#'
+#' @inheritParams .check_predictors_are_character
+#' @param max_predictors The maximum expected number of predictors.
+#'
+#' @return `predictors` (invisibly), or an error if there are too many columns.
+#' @keywords internal
 .validate_predictor_count <- function(predictors, max_predictors = 2) {
   if (ncol(predictors) > max_predictors) {
     all_cols <- glue::glue_collapse(
@@ -66,12 +92,13 @@
     )
     rlang::abort(
       glue::glue(
-        "We currently support 1 or 2 predictors columns.",
+        "We currently support 1 or 2 predictor columns.",
         "These columns were identified as predictors:",
         all_cols,
         .sep = "\n"
       ),
-      class = "too_many_predictors"
+      class = "too_many_predictors",
+      call = rlang::caller_env()
     )
   }
   return(invisible(predictors))
