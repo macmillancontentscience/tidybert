@@ -8,6 +8,7 @@
 
 library(testthat)
 library(torch)
+install_torch()
 library(tidybert)
 
 test_check("tidybert")
