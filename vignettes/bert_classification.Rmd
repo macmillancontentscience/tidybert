@@ -23,16 +23,10 @@ Here we demonstrate how to easily fit a BERT-based classification model.
 
 ## The MNLI Dataset
 
-We will use the [MultiNLI dataset](https://cims.nyu.edu/~sbowman/multinli/) (MNLI) to set up an entailment task.
-
+We will use the [MultiNLI dataset](https://cims.nyu.edu/~sbowman/multinli/) (MNLI) to set up an entailment task. 
 For more details about the task and the dataset, see the Textual Entailment vignette in {torchtransformers}.
 
 ```{r download-data, options}
-# TODO: Remove this and build the dataset-fetcher into {tt} as a demo. I
-# manually copied the dataset from dlr::app_cache_dir("torchtransformers") to
-# dlr::app_cache_dir("torchtransformers") in the meantime in case I don't get to
-# that step, to keep this stand-alone.
-
 # Set up a processor function for {dlr} to load the data.
 process_mnli <- function(source_file) {
   dataset_names <- c(
@@ -104,6 +98,7 @@ options(old_timeout)
 
 We will use the `train` dataset to fit a simple classification model.
 We'll fit small models by various methods, using a subset of the data. 
+If you were really training a model, we recommend using much more than 150 rows, and more than a single epoch.
 We'll reset seeds each time to confirm that the models are identical.
 
 ```{r fit}
@@ -140,10 +135,14 @@ entailment_fit_matrix <- bert_classification(
 )
 ```
 
+Regardless of your preferred format for providing the data, the resulting models are the same.
+
 ## Make Predictions
 
 Pass in new data to make predictions.
-The predictions can be in the form of the predicted label (default), or the class probabilities.
+The predictions can be in the form of the predicted label ("class", default), or the class probabilities ("prob").
+
+We predict with each method using each of the fitted models to verify that they are the same.
 
 ```{r predict}
 entailment_predictions_formula <- predict(
