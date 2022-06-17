@@ -7,6 +7,7 @@
 # * https://testthat.r-lib.org/reference/test_package.html#special-files
 
 library(testthat)
+library(torch)
 library(tidybert)
 
 test_check("tidybert")
