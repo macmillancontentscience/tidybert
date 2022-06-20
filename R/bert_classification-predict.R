@@ -22,7 +22,7 @@
 #' Valid options are:
 #'
 #' - `"class"` for "hard" class predictions.
-#' - `"prob"` for class probabilities. (NOT IMPLEMENTED AT ALL YET)
+#' - `"prob"` for class probabilities.
 #'
 #' @param ... Not used, but required for extensibility.
 #'
@@ -34,36 +34,50 @@
 #' @export
 predict.bert_classification <- function(object,
                                         new_data,
-                                        type = "class",
+                                        type = c("class", "prob"),
                                         ...) {
   forged <- hardhat::forge(new_data, object$blueprint)
-  rlang::arg_match(type, .valid_bert_classification_predict_types())
+  type <- match.arg(type)
   return(.predict_bert_classification_bridge(type, object, forged$predictors))
-}
-
-.valid_bert_classification_predict_types <- function() {
-  return(c("class"))
 }
 
 # ------------------------------------------------------------------------------
 # Bridge
 
-.predict_bert_classification_bridge <- function(type, model, predictors) {
-  predictors <- as.matrix(predictors)
+#' Prepare BERT Classification Data for Prediction
+#'
+#' @inheritParams predict.bert_classification
+#' @param predictors Forged predictor data.
+#'
+#' @return A tibble with output dependent on the type.
+#' @keywords internal
+.predict_bert_classification_bridge <- function(type, object, predictors) {
+  predictors_ds <- torchtransformers::dataset_bert(
+    x = predictors,
+    y = NULL,
+    n_tokens = object$n_tokens
+  )
 
   predict_function <- .get_bert_classification_predict_function(type)
-  predictions <- predict_function(model, predictors)
+  predictions <- predict_function(object, predictors_ds)
 
   hardhat::validate_prediction_size(predictions, predictors)
 
   return(predictions)
 }
 
+#' Choose the Proper Prediction Function for BERT Classification
+#'
+#' @inheritParams predict.bert_classification
+#'
+#' @return The predict function.
+#' @keywords internal
 .get_bert_classification_predict_function <- function(type) {
   return(
     switch(
       type,
-      class = .predict_bert_classification_class
+      class = .predict_bert_classification_class,
+      prob = .predict_bert_classification_prob
     )
   )
 }
@@ -71,7 +85,60 @@ predict.bert_classification <- function(object,
 # ------------------------------------------------------------------------------
 # Implementation
 
-.predict_bert_classification_class <- function(model, predictors) {
-  predictions <- rep(1L, times = nrow(predictors))
+#' Shared Prediction for BERT Classification
+#'
+#' @inheritParams .predict_bert_classification_bridge
+#'
+#' @return A torch tensor of softmax probabilities.
+#' @keywords internal
+.predict_bert_classification_shared <- function(object, predictors) {
+  # Get the prediction output and apply softmax.
+  return(
+    torch::nnf_softmax(
+      input = predict(object$luz_model, predictors),
+      dim = 2
+    )
+  )
+}
+
+#' Get Class for BERT Classification
+#'
+#' @inheritParams .predict_bert_classification_bridge
+#'
+#' @return A tibble with a factor column identifying the most probable outcome.
+#' @keywords internal
+.predict_bert_classification_class <- function(object, predictors) {
+  predictions <- torch::torch_argmax(
+    .predict_bert_classification_shared(object, predictors),
+    2
+  )
+
+  predictions <- torch::as_array(predictions$to(device = "cpu"))
+
+  predictions <- factor(
+    predictions,
+    levels = seq_len(length(object$outcome_levels)),
+    labels = object$outcome_levels
+  )
+
   return(hardhat::spruce_class(predictions))
+}
+
+#' Get Probabilities for BERT Classification
+#'
+#' @inheritParams .predict_bert_classification_bridge
+#'
+#' @return A tibble of probabilities.
+#' @keywords internal
+.predict_bert_classification_prob <- function(object, predictors) {
+  predictions <- .predict_bert_classification_shared(object, predictors)
+
+  predictions <- torch::as_array(predictions$to(device = "cpu"))
+
+  predictions <- hardhat::spruce_prob(
+    pred_levels = object$outcome_levels,
+    prob_matrix = predictions
+  )
+
+  return(predictions)
 }

@@ -1,0 +1,171 @@
+---
+title: "Fitting a BERT-style Classification Model"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Fitting a BERT-style Classification Model}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+```{r setup}
+library(tidybert)
+```
+
+Here we demonstrate how to easily fit a BERT-based classification model.
+
+## The MNLI Dataset
+
+We will use the [MultiNLI dataset](https://cims.nyu.edu/~sbowman/multinli/) (MNLI) to set up an entailment task. 
+For more details about the task and the dataset, see the Textual Entailment vignette in {torchtransformers}.
+
+```{r download-data, options}
+# Set up a processor function for {dlr} to load the data.
+process_mnli <- function(source_file) {
+  dataset_names <- c(
+    "train",
+    "dev_matched",
+    "dev_mismatched",
+    "test_matched",
+    "test_mismatched"
+  )
+  # Also make those the names so purrr uses them.
+  names(dataset_names) <- dataset_names
+  
+  mnli_tibbles <- purrr::map(
+    dataset_names,
+    function(this_dataset) {
+      # We specify column types to make sure things come in as we expect.
+      column_spec <- dplyr::case_when(
+        stringr::str_starts(this_dataset, "dev_") ~ "iicccccccccccccc",
+        stringr::str_starts(this_dataset, "test_") ~ "iiiccccccc",
+        TRUE ~ "iicccccccccc"
+      )
+      raw_tibble <- readr::read_tsv(
+        unz(source_file, fs::path("MNLI", this_dataset, ext = "tsv")),
+        col_types = column_spec,
+        # There are a couple lines that screw up if we include a quote
+        # character.
+        quote = ""
+      )
+      # If there are labels, standardize them, to make sure the factor levels
+      # are always the same.
+      if ("gold_label" %in% colnames(raw_tibble)) {
+        raw_tibble$gold_label <- factor(
+          raw_tibble$gold_label,
+          levels = c("entailment", "neutral", "contradiction")
+        )
+      }
+      return(
+        dplyr::select(
+          raw_tibble,
+          -index,
+          -promptID,
+          -pairID,
+          -dplyr::ends_with("_parse"),
+          -dplyr::starts_with("label")
+        )
+      )
+    }
+  )
+  
+  return(mnli_tibbles)
+}
+
+# By default downloading large files often fails. Increase the timeout.
+old_timeout <- options(timeout = 1000)
+
+data_url <- "https://dl.fbaipublicfiles.com/glue/data/MNLI.zip"
+
+mnli_tibbles <- dlr::read_or_cache(
+  source_path = data_url,
+  appname = "tidybert",
+  process_f = process_mnli
+)
+
+# Restore the timeout.
+options(old_timeout)
+```
+
+## Fit the Model
+
+We will use the `train` dataset to fit a simple classification model.
+We'll fit small models by various methods, using a subset of the data. 
+If you were really training a model, we recommend using much more than 150 rows, and more than a single epoch.
+We'll reset seeds each time to confirm that the models are identical.
+
+```{r fit}
+train_head <- head(mnli_tibbles$train, 150)
+
+set.seed(1234)
+torch::torch_manual_seed(1234)
+entailment_fit_formula <- bert_classification(
+  gold_label ~ sentence1 + sentence2, 
+  data = train_head,
+  model_name = "bert_tiny_uncased",
+  n_tokens = 128,
+  epochs = 1
+)
+
+set.seed(1234)
+torch::torch_manual_seed(1234)
+entailment_fit_dataframe <- bert_classification(
+  x = dplyr::select(train_head, sentence1, sentence2),
+  y = train_head$gold_label,
+  model_name = "bert_tiny_uncased",
+  n_tokens = 128,
+  epochs = 1
+)
+
+set.seed(1234)
+torch::torch_manual_seed(1234)
+entailment_fit_matrix <- bert_classification(
+  x = as.matrix(dplyr::select(train_head, sentence1, sentence2)),
+  y = train_head$gold_label,
+  model_name = "bert_tiny_uncased",
+  n_tokens = 128,
+  epochs = 1
+)
+```
+
+Regardless of your preferred format for providing the data, the resulting models are the same.
+
+## Make Predictions
+
+Pass in new data to make predictions.
+The predictions can be in the form of the predicted label ("class", default), or the class probabilities ("prob").
+
+We predict with each method using each of the fitted models to verify that they are the same.
+
+```{r predict}
+entailment_predictions_formula <- predict(
+  entailment_fit_formula,
+  new_data = head(mnli_tibbles$dev_matched)
+)
+
+entailment_probs_formula <- predict(
+  entailment_fit_formula,
+  new_data = head(mnli_tibbles$dev_matched),
+  type = "prob"
+)
+entailment_probs_dataframe <- predict(
+  entailment_fit_dataframe,
+  new_data = head(mnli_tibbles$dev_matched),
+  type = "prob"
+)
+entailment_probs_matrix <- predict(
+  entailment_fit_matrix,
+  new_data = head(mnli_tibbles$dev_matched),
+  type = "prob"
+)
+
+identical(entailment_probs_formula, entailment_probs_dataframe)
+identical(entailment_probs_formula, entailment_probs_matrix)
+```
