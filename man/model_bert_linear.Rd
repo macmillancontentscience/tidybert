@@ -18,5 +18,8 @@ dense layer.
 }
 \description{
 Construct a BERT model with pretrained weights, and add a final dense linear
-layer to transform to a desired number of dimensions.
+layer to transform to a desired number of dimensions. Note that we only use
+the CLS token output from the final layer of the BERT model. It is possible
+to attach a classification head to BERT using other techniques, but here we
+use this simple technique.
 }

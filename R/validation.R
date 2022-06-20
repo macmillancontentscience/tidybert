@@ -92,7 +92,7 @@
     )
     rlang::abort(
       glue::glue(
-        "We currently support 1 or 2 predictor columns.",
+        "This model supports up to {max_predictors} predictor columns.",
         "These columns were identified as predictors:",
         all_cols,
         .sep = "\n"

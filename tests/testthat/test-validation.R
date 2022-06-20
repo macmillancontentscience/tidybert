@@ -55,7 +55,7 @@ test_that("number of predictor check works.", {
   )
   expect_error(
     .validate_predictor_count(test_df, 2),
-    regexp = "1 or 2 predictor columns",
+    regexp = "2 predictor columns",
     class = "too_many_predictors"
   )
 })
