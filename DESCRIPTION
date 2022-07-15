@@ -1,6 +1,6 @@
 Package: tidybert
 Title: Tidy BERT-like Models
-Version: 0.0.0.9100
+Version: 0.0.0.9200
 Authors@R: c(
     person(given = "Jonathan",
            family = "Bratt",
@@ -23,6 +23,7 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.0
 Imports: 
+    dplyr,
     glue,
     hardhat,
     luz,
@@ -30,6 +31,7 @@ Imports:
     purrr,
     rlang,
     stats,
+    tibble,
     torch,
     torchtransformers (>= 0.0.0.9200)
 Remotes:
@@ -40,7 +42,6 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0),
     dlr,
-    dplyr,
     stringr
 URL: https://github.com/macmillancontentscience/tidybert
 BugReports: https://github.com/macmillancontentscience/tidybert/issues
