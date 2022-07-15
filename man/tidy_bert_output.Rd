@@ -9,7 +9,7 @@ tidy_bert_output(bert_model_output, tokenized)
 \arguments{
 \item{bert_model_output}{The output from a BERT model.}
 
-\item{tokenized}{The raw output from \code{torchtransformers::tokenize_bert}.}
+\item{tokenized}{The raw output from \code{torchtransformers::tokenize_bert} with \code{simplify = FALSE}.}
 }
 \value{
 A list of data frames, one for the layer output embeddings and one
