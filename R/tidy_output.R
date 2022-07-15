@@ -297,7 +297,7 @@
 #' the layer outputs and the attention weights.
 #'
 #' @param bert_model_output The output from a BERT model.
-#' @param tokenized The raw output from `torchtransformers::tokenize_bert`.
+#' @param tokenized The raw output from `torchtransformers::tokenize_bert` with `simplify = FALSE`.
 #'
 #' @return A list of data frames, one for the layer output embeddings and one
 #' for the attention weights.
