@@ -31,6 +31,7 @@ Imports:
     purrr,
     rlang,
     stats,
+    tibble,
     torch,
     torchtransformers (>= 0.0.0.9200)
 Remotes:
