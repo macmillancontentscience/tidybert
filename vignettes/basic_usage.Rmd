@@ -1,0 +1,237 @@
+---
+title: "Basic Usage"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Basic Usage}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  eval = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(tidybert)
+library(torch)
+library(torchtransformers)
+library(dplyr)
+library(tibble)
+library(stringr)
+library(tidyr)
+library(dlr)
+library(rsample)
+```
+
+The tidybert package, along with {[torchtransformers](https://github.com/macmillancontentscience/torchtransformers)}, provides an R interface to the BERT family of language models.^[It is the {[torch](https://torch.mlverse.org/)}-based successor to the TensorFlow-based package {[RBERT](https://github.com/jonathanbratt/RBERT)}.]
+
+Generally speaking, there are three levels at which a BERT model could be used:
+
+1. Using the output embeddings produced by a pre-trained BERT model as features in a task-specific model.
+2. Fine-tuning a task-specific deep learning model that includes pre-trained BERT weights as initial values that are subsequently refined.
+3. Training a BERT model from scratch (and then possibly using the pre-trained model in one of the two ways above).
+
+
+{tidybert} exports functions to make 1. and 2. as easy as possible. 
+It also enables exploring the output embeddings and attention weights produced by a BERT model, to better understand how these models work.
+
+# Producing contextual embeddings
+
+Assume we have a data frame of input text. 
+Each input sequence is composed of two segments, with each segment in a different column in the table.
+
+```{r}
+text_inputs <- tibble::tribble(
+  ~segment1, ~segment2,
+  "Why didn't the chicken cross the road?", "Because it was too wide.",
+  "Why didn't the chicken cross the road?", "Because it was too tired.",
+  "Why didn't the chicken cross the road?", "Because it was raining."
+)
+text_inputs
+```
+
+We want to produce contextual embeddings for these sequences.
+First we tokenize the input text into the format required by the model. 
+We'll use the `tokenize_bert` function exported from the {torchtransformers} package (the api here will likely be
+changing soon).
+
+```{r}
+# Set the number of tokens to pad/truncate the result to.
+n_tokens <- 20L
+n_inputs <- length(text_inputs)
+tokenized <- torchtransformers::tokenize_bert(text_inputs$segment1,
+                                              text_inputs$segment2,
+                                              simplify = TRUE,
+                                              n_tokens = n_tokens)
+# For now, we will also need the non-simplified tokenized text, for the token
+# names. A forthcoming {torchtransormers} update will make this unnecessary. 
+tokenized_names <- torchtransformers::tokenize_bert(text_inputs$segment1,
+                                                    text_inputs$segment2,
+                                                    simplify = FALSE,
+                                                    n_tokens = n_tokens)
+```
+
+Load a pretrained BERT model and pass in the input:
+
+```{r}
+bert_model <- torchtransformers::make_and_load_bert(model_name = "bert_base_uncased")
+
+bert_model$eval() 
+bert_output <- bert_model(torch::torch_tensor(tokenized$token_ids), 
+                          torch::torch_tensor(tokenized$token_type_ids))
+```
+
+## Extracting embeddings in tidy form
+
+Everything up to this point was done with the {torchtransformers} package. 
+The {tidybert} package provides functions to further process the model output into a tidy format.^[The tidied outputs are in a format that is compatible with the visualization functions from the package {[RBERTviz](https://github.com/jonathanbratt/RBERTviz)}.]
+
+```{r}
+tidy_out <- tidybert::tidy_bert_output(bert_output, tokenized_names)
+```
+
+The `embeddings` element of `tidy_out` is a data frame containing one embedding vector per row. 
+Each row also contains columns identifying the input sequence, segment, token, and layer. 
+
+Note that we use 1-based indexing, so a 12-layer BERT model (for example) is indexed from 1 to 12. 
+The "0" layer in this table corresponds to the base embeddings *before* layer 1, that is, before any layers of self-attention.
+
+```{r}
+# glimpse just the first few columns to understand the structure
+dplyr::glimpse(tidy_out$embeddings[, 1:10])
+```
+
+
+## Extracting the attention weights
+
+The tidied output also contains a data frame with the attention weights.
+Each row contains the weight value for the attention paid from a single token to a single token, along with columns identifying the sequence, the tokens, the segments, the layer, and the attention "head".
+
+```{r}
+dplyr::glimpse(tidy_out$attention)
+```
+
+
+# Fine-tuning models
+
+{tidybert} also provides functions to simplify the fine-tuning of BERT-based classification models. 
+(A simple classifier head consisting of a dense layer is used; for more control, build a custom model directly with {torchtransformers}.)
+
+To illustrate the process, let's make a classifier for synonyms/antonyms.
+This is an interesting example case, because one of the presumed benefits to using word vectors is that the embeddings provide a measure of the similarity between words. 
+So, it _should_ be easy to train a model to distinguish between synonyms and antonyms.
+
+First, let's get some training data...
+
+```{r, eval = FALSE}
+# Set up a processor function for {dlr} to load the data.
+process_synant <- function(source_file) {
+  synant <- readr::read_csv(source_file)
+
+  # This is an extremely messy table. We're not going to try to do any real
+  # cleaning, just throw away the messy parts. 
+  # Fix the names:
+  names(synant) <- c("word", "synonym", "antonym")
+  
+  # The first 103 rows are mixed with text, so let's throw those away.
+  synant_clean <- synant %>% 
+    dplyr::filter(dplyr::row_number() > 103) %>% 
+    # Throw away any rows that have "[see also]" notes:
+    dplyr::filter(!grepl("[", synonym, fixed = TRUE),
+                  !grepl("[", antonym, fixed = TRUE),
+                  !grepl("[", word, fixed = TRUE),
+                  # Some rows have errors that probably came from formatting
+                  !grepl("SYN", word, fixed = TRUE),
+                  # The easiest way to remove extra end matter is...
+                  !is.na(synonym),
+                  !is.na(antonym)
+    ) %>% 
+    # sometimes the word can be found verbatim in the synonym list. This looks
+    # like it's usually a formatting error, but we want to avoid that anyway.
+    # Toss 'em!
+    dplyr::rowwise() %>% 
+    dplyr::filter(!grepl(word, synonym, fixed = TRUE))
+  # # Some words have part-of-speech flags. Keep those for this.
+  
+  # One more thing: let's break up the lists so there's a single antonym or
+  # synonym per example. A nice feature of this data is that double-spaces are
+  # used to delineate separate entries, so multi-word phrases can still be
+  # preserved.
+  # Let's also pivot so that the synonyms and antonyms are in the same column.
+  synant_tidy <- synant_clean %>% 
+    tidyr::pivot_longer(cols = dplyr::all_of(c("antonym", 
+                                               "synonym")),
+                        names_to = "target",
+                        values_to = "other_word") %>% 
+    dplyr::mutate(target = as.factor(target)) %>% 
+    dplyr::mutate(other_word = stringr::str_split(other_word, "\\s{2,5}")) %>% 
+    tidyr::unnest_longer(other_word)
+  return(synant_tidy)
+}
+
+synant_url <- "https://www.gutenberg.org/files/51155/old/20190304-51155.csv"
+synant_tidy <- dlr::read_or_cache(
+  source_path = synant_url,
+  appname = "torchtransformers",
+  process_f = process_synant
+)
+
+
+table(synant_tidy$target)
+# antonym synonym 
+#   31411   39552 
+```
+
+Wow! We now have a data set of over 71K examples of antonyms and synonyms.
+
+```{r, eval = FALSE}
+# Let's split off some rows for testing...
+train_test_split <- rsample::initial_split(synant_tidy,
+                                           prop = 0.9,
+                                           strata = target)
+
+training_set <- rsample::training(train_test_split)
+testing_set <- rsample::testing(train_test_split)
+```
+
+Now build a classification model.
+We are using two-segment input sequences, with the word as one segment and the other word as the other sequence. 
+The minimum number of tokens we will need is five, but some of the words will comprise multiple tokens, so we'll give ourselves some extra space.
+
+```{r, eval = FALSE}
+# This runs in less than 20 minutes on a laptop CPU.
+bert_classifier <- bert_classification(
+  x = dplyr::select(training_set, word, other_word),
+  y = dplyr::select(training_set, target),
+  model_name = "bert_tiny_uncased",
+  n_tokens = 14L, # don't need many tokens for this
+  epochs = 5L
+)
+```
+
+Let's see what the predictions are on the test set.
+
+```{r, eval = FALSE}
+preds <- predict(bert_classifier, dplyr::select(testing_set, word, other_word))
+mean(preds$.pred_class == testing_set$target)
+# [1] 0.7479572 # YMMV
+
+# We can also try arbitrary input.
+predict(
+      bert_classifier,
+      dplyr::tibble(
+        word = c("spacious", "spacious"),
+        other_word = c("cramped", "roomy")
+      )
+    )
+# # A tibble: 2 × 1
+#   .pred_class
+#   <fct>      
+# 1 antonym    
+# 2 synonym 
+```
+
