@@ -35,7 +35,7 @@ It also enables exploring the output embeddings and attention weights produced b
 # Producing contextual embeddings
 
 Assume we have a data frame of input text. 
-To keep it general, suppose we have sequences with multiple segments, with each segment in a different column in the table.
+Each input sequence is composed of two segments, with each segment in a different column in the table.
 
 ```{r}
 text_inputs <- tibble::tribble(
@@ -44,11 +44,12 @@ text_inputs <- tibble::tribble(
   "Why didn't the chicken cross the road?", "Because it was too tired.",
   "Why didn't the chicken cross the road?", "Because it was raining."
 )
+text_inputs
 ```
 
 We want to produce contextual embeddings for these sequences.
-Let's first tokenize the input text. 
-We'll use the `tokenize_bert` function exported from the torchtransformers package (the api here will likely be
+First we tokenize the input text into the format required by the model. 
+We'll use the `tokenize_bert` function exported from the {torchtransformers} package (the api here will likely be
 changing soon).
 
 ```{r}
@@ -79,8 +80,8 @@ bert_output <- bert_model(torch::torch_tensor(tokenized$token_ids),
 
 ## Extracting embeddings in tidy form
 
-Everything up to this point was done with the torchtransformers package. 
-The tidybert package provides functions to further process the model output into a tidy format:
+Everything up to this point was done with the {torchtransformers} package. 
+The {tidybert} package provides functions to further process the model output into a tidy format:
 
 ```{r}
 tidy_out <- tidybert::tidy_bert_output(bert_output, tokenized_names)
@@ -131,7 +132,7 @@ RBERTviz::visualize_attention(tidy_out$attention, sequence_index = 1)
 # Fine-tuning models
 
 {tidybert} also provides functions to simplify the fine-tuning of BERT-based classification models. 
-(A simple classifier head consisting of a dense layer is used; for more control, build a custom model directly with torchtransformers.)
+(A simple classifier head consisting of a dense layer is used; for more control, build a custom model directly with {torchtransformers}.)
 
 To illustrate the process, let's make a classifier for synonyms/antonyms.
 This is an interesting example case, because one of the presumed benefits to using word vectors is that the embeddings provide a measure of the similarity between words. 
@@ -141,7 +142,7 @@ First, let's get some training data...
 
 ```{r, eval = FALSE}
 # Here's where we'll get our training data from:
-synant_url <- "https://www.gutenberg.org/dirs/5/1/1/5/51155/51155-csv.csv"
+synant_url <- "https://www.gutenberg.org/files/51155/old/20190304-51155.csv"
 synant <- readr::read_csv(synant_url)
 
 # This is an extremely messy table. We're not going to try to do any real
@@ -192,7 +193,7 @@ Wow! We now have a data set of over 71K examples of antonyms and synonyms.
 
 ```{r, eval = FALSE}
 # Let's split off some rows for testing...
-train_test_split <- rsample::initial_split(synant_cleaner, prop = 0.9)
+train_test_split <- rsample::initial_split(synant_cleaner, prop = 0.9, strata = target)
 
 training_set <- rsample::training(train_test_split)
 testing_set <- rsample::testing(train_test_split)
@@ -217,8 +218,8 @@ Let's see what the predictions are on the test set.
 
 ```{r, eval = FALSE}
 preds <- predict(bert_classifier, dplyr::select(testing_set, word, other_word))
-mean(preds$.pred_class == as.factor(testing_set$target))
-# [1] 0.7970974
+mean(preds$.pred_class == testing_set$target)
+# [1] 0.7479572
 
 # We can also try arbitrary input.
 predict(
