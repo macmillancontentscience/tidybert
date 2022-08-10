@@ -17,10 +17,17 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(tidybert)
+library(torch)
+library(torchtransformers)
+library(dplyr)
+library(tibble)
+library(stringr)
+library(tidyr)
+library(dlr)
+library(rsample)
 ```
 
-The tidybert package, along with {[torchtransformers](https://github.com/macmillancontentscience/torchtransformers)}, provides a {[torch](https://torch.mlverse.org/)}-based R interface to the BERT family of language models. 
-It is the successor to the TensorFlow-based package {[RBERT](https://github.com/jonathanbratt/RBERT)}.
+The tidybert package, along with {[torchtransformers](https://github.com/macmillancontentscience/torchtransformers)}, provides an R interface to the BERT family of language models.^[It is the {[torch](https://torch.mlverse.org/)}-based successor to the TensorFlow-based package {[RBERT](https://github.com/jonathanbratt/RBERT)}.]
 
 Generally speaking, there are three levels at which a BERT model could be used:
 
@@ -81,7 +88,7 @@ bert_output <- bert_model(torch::torch_tensor(tokenized$token_ids),
 ## Extracting embeddings in tidy form
 
 Everything up to this point was done with the {torchtransformers} package. 
-The {tidybert} package provides functions to further process the model output into a tidy format:
+The {tidybert} package provides functions to further process the model output into a tidy format.^[The tidied outputs are in a format that is compatible with the visualization functions from the package {[RBERTviz](https://github.com/jonathanbratt/RBERTviz)}.]
 
 ```{r}
 tidy_out <- tidybert::tidy_bert_output(bert_output, tokenized_names)
@@ -108,26 +115,6 @@ Each row contains the weight value for the attention paid from a single token to
 dplyr::glimpse(tidy_out$attention)
 ```
 
-## RBERTviz compatibility
-
-The tidied outputs are compatible with the visualization functions from the RBERTviz package.
-
-```{r, fig.width=6, fig.height=4}
-# compatible with RBERTviz
-tidy_out$embeddings %>% 
-  dplyr::filter(token %in% c("it", "chicken", "road"),
-                layer_index %in% c(12)) %>% 
-  dplyr::mutate(it_was = dplyr::case_when(sequence_index == 1 ~"wide", 
-                                          sequence_index == 2 ~"tired",
-                                          sequence_index == 3 ~"raining")
-                ) %>% 
-  RBERTviz::display_pca(color_field = "it_was", disambiguate_tokens = FALSE)
-```
-
-```{r}
-# The attention viewer also works
-RBERTviz::visualize_attention(tidy_out$attention, sequence_index = 1)
-```
 
 # Fine-tuning models
 
@@ -141,50 +128,60 @@ So, it _should_ be easy to train a model to distinguish between synonyms and ant
 First, let's get some training data...
 
 ```{r, eval = FALSE}
-# Here's where we'll get our training data from:
-synant_url <- "https://www.gutenberg.org/files/51155/old/20190304-51155.csv"
-synant <- readr::read_csv(synant_url)
+# Set up a processor function for {dlr} to load the data.
+process_synant <- function(source_file) {
+  synant <- readr::read_csv(source_file)
 
-# This is an extremely messy table. We're not going to try to do any real
-# cleaning, just throw away the messy parts. 
-# Fix the names:
-names(synant) <- c("word", "synonym", "antonym")
-
-# The first 103 rows are mixed with text, so let's throw those away.
-synant_clean <- synant %>% 
-  dplyr::filter(dplyr::row_number() > 103) %>% 
-  # Throw away any rows that have "[see also]" notes:
-  dplyr::filter(!grepl("[", synonym, fixed = TRUE),
-                !grepl("[", antonym, fixed = TRUE),
-                !grepl("[", word, fixed = TRUE),
-                # Some rows have errors that probably came from formatting
-                !grepl("SYN", word, fixed = TRUE),
-                # The easiest way to remove extra end matter is...
-                !is.na(synonym),
-                !is.na(antonym)
-  ) %>% 
-  # sometimes the word can be found verbatim in the synonym list. This looks
-  # like it's usually a formatting error, but we want to avoid that anyway.
-  # Toss 'em!
-  dplyr::rowwise() %>% 
-  dplyr::filter(!grepl(word, synonym, fixed = TRUE))
+  # This is an extremely messy table. We're not going to try to do any real
+  # cleaning, just throw away the messy parts. 
+  # Fix the names:
+  names(synant) <- c("word", "synonym", "antonym")
+  
+  # The first 103 rows are mixed with text, so let's throw those away.
+  synant_clean <- synant %>% 
+    dplyr::filter(dplyr::row_number() > 103) %>% 
+    # Throw away any rows that have "[see also]" notes:
+    dplyr::filter(!grepl("[", synonym, fixed = TRUE),
+                  !grepl("[", antonym, fixed = TRUE),
+                  !grepl("[", word, fixed = TRUE),
+                  # Some rows have errors that probably came from formatting
+                  !grepl("SYN", word, fixed = TRUE),
+                  # The easiest way to remove extra end matter is...
+                  !is.na(synonym),
+                  !is.na(antonym)
+    ) %>% 
+    # sometimes the word can be found verbatim in the synonym list. This looks
+    # like it's usually a formatting error, but we want to avoid that anyway.
+    # Toss 'em!
+    dplyr::rowwise() %>% 
+    dplyr::filter(!grepl(word, synonym, fixed = TRUE))
   # # Some words have part-of-speech flags. Keep those for this.
+  
+  # One more thing: let's break up the lists so there's a single antonym or
+  # synonym per example. A nice feature of this data is that double-spaces are
+  # used to delineate separate entries, so multi-word phrases can still be
+  # preserved.
+  # Let's also pivot so that the synonyms and antonyms are in the same column.
+  synant_tidy <- synant_clean %>% 
+    tidyr::pivot_longer(cols = dplyr::all_of(c("antonym", 
+                                               "synonym")),
+                        names_to = "target",
+                        values_to = "other_word") %>% 
+    dplyr::mutate(target = as.factor(target)) %>% 
+    dplyr::mutate(other_word = stringr::str_split(other_word, "\\s{2,5}")) %>% 
+    tidyr::unnest_longer(other_word)
+  return(synant_tidy)
+}
 
-# One more thing: let's break up the lists so there's a single antonym or
-# synonym per example. A nice feature of this data is that double-spaces are
-# used to delineate separate entries, so multi-word phrases can still be
-# preserved.
-# Let's also pivot so that the synonyms and antonyms are all in the same column.
-synant_cleaner <- synant_clean %>% 
-  tidyr::pivot_longer(cols = dplyr::all_of(c("antonym", 
-                                             "synonym")),
-                      names_to = "target",
-                      values_to = "other_word") %>% 
-  dplyr::mutate(target = as.factor(target)) %>% 
-  dplyr::mutate(other_word = stringr::str_split(other_word, "\\s{2,5}")) %>% 
-  tidyr::unnest_longer(other_word)
+synant_url <- "https://www.gutenberg.org/files/51155/old/20190304-51155.csv"
+synant_tidy <- dlr::read_or_cache(
+  source_path = synant_url,
+  appname = "torchtransformers",
+  process_f = process_synant
+)
 
-table(synant_cleaner$target)
+
+table(synant_tidy$target)
 # antonym synonym 
 #   31411   39552 
 ```
@@ -193,7 +190,9 @@ Wow! We now have a data set of over 71K examples of antonyms and synonyms.
 
 ```{r, eval = FALSE}
 # Let's split off some rows for testing...
-train_test_split <- rsample::initial_split(synant_cleaner, prop = 0.9, strata = target)
+train_test_split <- rsample::initial_split(synant_tidy,
+                                           prop = 0.9,
+                                           strata = target)
 
 training_set <- rsample::training(train_test_split)
 testing_set <- rsample::testing(train_test_split)
@@ -219,7 +218,7 @@ Let's see what the predictions are on the test set.
 ```{r, eval = FALSE}
 preds <- predict(bert_classifier, dplyr::select(testing_set, word, other_word))
 mean(preds$.pred_class == testing_set$target)
-# [1] 0.7479572
+# [1] 0.7479572 # YMMV
 
 # We can also try arbitrary input.
 predict(

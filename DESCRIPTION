@@ -1,6 +1,6 @@
 Package: tidybert
 Title: Tidy BERT-like Models
-Version: 0.0.0.9200
+Version: 0.0.0.9300
 Authors@R: c(
     person(given = "Jonathan",
            family = "Bratt",
@@ -42,6 +42,8 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0),
     dlr,
+    rsample,
+    tidyr,
     stringr
 URL: https://github.com/macmillancontentscience/tidybert
 BugReports: https://github.com/macmillancontentscience/tidybert/issues
