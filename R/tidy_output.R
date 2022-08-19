@@ -28,7 +28,7 @@
 #' @keywords internal
 .make_token_map <- function(tokenized) {
   tok_id_list <- tokenized$token_ids
-  tok_list <- purrr::map(tok_id_list, names)
+  tok_list <- tokenized$token_names
   tt_list <- tokenized$token_type_ids
 
   token_map <- tibble::tibble(
@@ -37,10 +37,11 @@
     segment_index = integer(),
     token = character()
   )
-  for (i in seq_along(tok_list)) {
-    tokens <- tok_list[[i]]
-    token_ids <- tok_id_list[[i]]
-    segments <- tt_list[[i]]
+  # Process by row, since each row is a difference sequence.
+  for (i in seq_len(nrow(tok_list))) {
+    tokens <- tok_list[i,]
+    token_ids <- tok_id_list[i,]
+    segments <- tt_list[i,]
     token_seq <- seq_along(tokens)
     token_map <- dplyr::bind_rows(
       token_map,
@@ -297,7 +298,7 @@
 #' the layer outputs and the attention weights.
 #'
 #' @param bert_model_output The output from a BERT model.
-#' @param tokenized The raw output from `torchtransformers::tokenize_bert` with `simplify = FALSE`.
+#' @param tokenized The raw output from `torchtransformers::tokenize_bert`.
 #'
 #' @return A list of data frames, one for the layer output embeddings and one
 #' for the attention weights.

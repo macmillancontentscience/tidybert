@@ -12,16 +12,10 @@ test_that("bert output tidiers work", {
   n_inputs <- length(test_input_1)
   tokenized <- torchtransformers::tokenize_bert(test_input_1,
                                                 test_input_2,
-                                                simplify = FALSE,
                                                 n_tokens = n_tokens)
   # format the input
-  token_input <- torch::torch_transpose(
-    torch::torch_tensor(array(unlist(tokenized$token_ids),
-                              dim = c(n_tokens, n_inputs))), 1, 2)
-
-  tt_input <- torch::torch_transpose(
-    torch::torch_tensor(array(unlist(tokenized$token_type_ids),
-                              dim = c(n_tokens, n_inputs))), 1, 2)
+  token_input <- torch::torch_tensor(tokenized$token_ids)
+  tt_input <- torch::torch_tensor(tokenized$token_type_ids)
 
   bert_model$eval()
   bert_output <- bert_model(token_input, tt_input)

@@ -7,7 +7,7 @@
 .make_token_map(tokenized)
 }
 \arguments{
-\item{tokenized}{The raw output from \code{torchtransformers::tokenize_bert} with \code{simplify = FALSE}.}
+\item{tokenized}{The raw output from \code{torchtransformers::tokenize_bert}.}
 }
 \value{
 A data frame of the input tokens, with explicit index columns.
