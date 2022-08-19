@@ -51,7 +51,7 @@
       Metrics observed in the last epoch.
       
       i Training:
-      loss: 0.9203
+      loss: 0.885
       acc: 0.5
       
       -- Model -----------------------------------------------------------------------
@@ -87,7 +87,7 @@
       Metrics observed in the last epoch.
       
       i Training:
-      loss: 0.977
+      loss: 0.9744
       acc: 0.4583
       
       -- Model -----------------------------------------------------------------------
@@ -123,7 +123,7 @@
       Metrics observed in the last epoch.
       
       i Training:
-      loss: 0.977
+      loss: 0.9744
       acc: 0.4583
       
       -- Model -----------------------------------------------------------------------
@@ -159,7 +159,7 @@
       Metrics observed in the last epoch.
       
       i Training:
-      loss: 0.9203
+      loss: 0.885
       acc: 0.5
       
       -- Model -----------------------------------------------------------------------

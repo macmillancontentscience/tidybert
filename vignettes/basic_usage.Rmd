@@ -65,14 +65,7 @@ n_tokens <- 20L
 n_inputs <- length(text_inputs)
 tokenized <- torchtransformers::tokenize_bert(text_inputs$segment1,
                                               text_inputs$segment2,
-                                              simplify = TRUE,
                                               n_tokens = n_tokens)
-# For now, we will also need the non-simplified tokenized text, for the token
-# names. A forthcoming {torchtransormers} update will make this unnecessary. 
-tokenized_names <- torchtransformers::tokenize_bert(text_inputs$segment1,
-                                                    text_inputs$segment2,
-                                                    simplify = FALSE,
-                                                    n_tokens = n_tokens)
 ```
 
 Load a pretrained BERT model and pass in the input:
@@ -91,7 +84,7 @@ Everything up to this point was done with the {torchtransformers} package.
 The {tidybert} package provides functions to further process the model output into a tidy format.^[The tidied outputs are in a format that is compatible with the visualization functions from the package {[RBERTviz](https://github.com/jonathanbratt/RBERTviz)}.]
 
 ```{r}
-tidy_out <- tidybert::tidy_bert_output(bert_output, tokenized_names)
+tidy_out <- tidybert::tidy_bert_output(bert_output, tokenized)
 ```
 
 The `embeddings` element of `tidy_out` is a data frame containing one embedding vector per row. 
