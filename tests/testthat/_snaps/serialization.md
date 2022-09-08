@@ -1,4 +1,4 @@
-# predicting for a bert_classification works
+# Serialization works.
 
     Code
       predict(test_model, dplyr::tibble(x1 = letters[1:5], x2 = rev(letters)[1:5]))

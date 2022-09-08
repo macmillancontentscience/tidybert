@@ -1,4 +1,4 @@
-test_that("predicting for a bert_classification works", {
+test_that("Serialization works.", {
   # torch_manual_seed appears to need an initialization for consistency between
   # my normal R session and R CMD check.
   torch::torch_manual_seed(1234)
@@ -11,16 +11,20 @@ test_that("predicting for a bert_classification works", {
 
   set.seed(1234)
   torch::torch_manual_seed(1234)
-  test_model <- bert_classification(
+  pre_model <- bert_classification(
     y ~ x1 + x2,
     train_df,
     n_tokens = 5L,
     epochs = 1L
   )
 
-  # This model is super bad and just always picks a, but I did other tests that
-  # convinced me the functions actually work. I just want to check that it keeps
-  # doing the same thing.
+  temp_location <- tempfile()
+  on.exit(unlink(temp_location), add = TRUE)
+  saveRDS(pre_model, temp_location)
+  test_model <- readRDS(temp_location)
+
+  # I manually checked that these snapshots match the ones produced in the
+  # predict tests.
   expect_snapshot(
     predict(
       test_model,

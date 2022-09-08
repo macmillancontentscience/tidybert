@@ -403,32 +403,3 @@ bert_classification.formula <- function(formula,
 
   return(fitted)
 }
-
-
-# ------------------------------------------------------------------------------
-# Constructor
-
-#' Create the Bert Classification Object
-#'
-#' @param luz_model A model fit using `{luz}`.
-#' @param outcome_levels The levels of the outcome factor.
-#' @param n_tokens The number of tokens to which the predictors should be
-#'   tokenized.
-#' @param blueprint The `{hardhat}` blueprint to reproduce the data.
-#'
-#' @return A `{hardhat}` \code{\link[hardhat]{new_model}}.
-#' @keywords internal
-.new_bert_classification <- function(luz_model,
-                                     outcome_levels,
-                                     n_tokens,
-                                     blueprint) {
-  return(
-    hardhat::new_model(
-      luz_model = luz_model,
-      outcome_levels = outcome_levels,
-      n_tokens = n_tokens,
-      blueprint = blueprint,
-      class = "bert_classification"
-    )
-  )
-}
