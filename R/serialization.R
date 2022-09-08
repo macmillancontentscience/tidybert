@@ -12,6 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#' Serialize a Luz Model
+#'
+#' Parameters for luz models are held in pointers that become invalid if you
+#' save and then load the model. To avoid issues with those pointers, we add a
+#' `serialized_state_dict` parameter to the `luz_model` object, which holds safe
+#' versions of the parameter values.
+#'
+#' @param luz_model A `luz_model` object to update.
+#'
+#' @return The `luz_model` with `serialized_state_dict` attached.
+#' @keywords internal
 .serialize_luz_model <- function(luz_model) {
   # We serialize just the state_dict. That will allow us to "repair" a loaded
   # model in place.
@@ -23,6 +34,16 @@
   return(luz_model)
 }
 
+#' Check Pointers in a Luz Model
+#'
+#' The `.check$ptr` tensor in a `bert_linear` model allows us to check whether
+#' the model contains invalid pointers. If it does, restore the
+#' `serialized_state_dict` into the model (in-place).
+#'
+#' @param luz_model The model to check.
+#'
+#' @return The model, invisibly.
+#' @keywords internal
 .check_luz_model_serialization <- function(luz_model) {
   if (.is_null_external_pointer(luz_model$model$.check$ptr)) {
     .unserialize_luz_model(luz_model)
@@ -30,6 +51,15 @@
   return(invisible(luz_model))
 }
 
+#' Check if a Pointer is NULL
+#'
+#' This comes from https://stackoverflow.com/a/27350487/3297472 via
+#' https://github.com/mlverse/tabnet/blob/main/R/hardhat.R#L494
+#'
+#' @param pointer A pointer to check.
+#'
+#' @return A logical indicating whether that pointer is NULL (and thus invalid).
+#' @keywords internal
 .is_null_external_pointer <- function(pointer) {
   a <- attributes(pointer)
   attributes(pointer) <- NULL
@@ -38,6 +68,14 @@
   return(out)
 }
 
+#' Restore a Serialized State Dictionary
+#'
+#' This function reloads the state dictionary in place.
+#'
+#' @param luz_model The model to fix.
+#'
+#' @return The model, invisibly.
+#' @keywords internal
 .unserialize_luz_model <- function(luz_model) {
   # Do this in place.
   con <- rawConnection(luz_model$serialized_state_dict)
