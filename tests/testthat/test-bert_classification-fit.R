@@ -1,3 +1,8 @@
+# Currently several lines related to the validation data are untested in a
+# special case. I'm holding off on adding tests for that because we're about to
+# change how data gets processed, so I *think* all of that code will become
+# invalid.
+
 x1 <- letters
 x2 <- rev(letters)
 y <- factor(rep(c("a", "b"), 13))
@@ -14,6 +19,19 @@ test_that("fitting bert_classification works for dfs", {
   # torch_manual_seed appears to need an initialization for consistency between
   # my normal R session and R CMD check.
   torch::torch_manual_seed(1234)
+
+  expect_error(
+    bert_classification(
+      x = dplyr::select(train_df, x1, x2),
+      y = y,
+      valid_x = dplyr::select(validation_data, x1, x2),
+      valid_y = NULL,
+      n_tokens = 5L,
+      epochs = 1L
+    ),
+    regexp = "Please provide both",
+    class = "bad_valid_data"
+  )
 
   set.seed(1234)
   torch::torch_manual_seed(1234)
@@ -43,19 +61,6 @@ test_that("fitting bert_classification works for dfs", {
   # Times can change.
   test_result$luz_model$records$profile <- NULL
   expect_snapshot(test_result)
-
-  expect_error(
-    bert_classification(
-      x = dplyr::select(train_df, x1, x2),
-      y = y,
-      valid_x = dplyr::select(validation_data, x1, x2),
-      valid_y = NULL,
-      n_tokens = 5L,
-      epochs = 1L
-    ),
-    regexp = "Please provide both",
-    class = "bad_valid_data"
-  )
 })
 
 test_that("fitting bert_classification works for matrices", {
@@ -76,6 +81,17 @@ test_that("fitting bert_classification works for matrices", {
 })
 
 test_that("fitting bert_classification works for formulas", {
+  expect_error(
+    bert_classification(
+      y ~ x1 + x2,
+      train_df,
+      valid_data = dplyr::select(validation_data, x1, x2),
+      n_tokens = 5L,
+      epochs = 1L
+    ),
+    regexp = "outcomes were not found"
+  )
+
   set.seed(1234)
   torch::torch_manual_seed(1234)
   test_result <- bert_classification(
@@ -100,17 +116,6 @@ test_that("fitting bert_classification works for formulas", {
   # Times can change.
   test_result$luz_model$records$profile <- NULL
   expect_snapshot(test_result)
-
-  expect_error(
-    bert_classification(
-      y ~ x1 + x2,
-      train_df,
-      valid_data = dplyr::select(validation_data, x1, x2),
-      n_tokens = 5L,
-      epochs = 1L
-    ),
-    regexp = "outcomes were not found"
-  )
 })
 
 test_that("fitting bert_classification fails gracefully", {

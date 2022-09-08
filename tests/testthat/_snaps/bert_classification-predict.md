@@ -1,7 +1,7 @@
 # predicting for a bert_classification works
 
     Code
-      predict(test_model, dplyr::tibble(x1 = letters[1:5], x2 = rev(letters)[1:5]))
+      preds_class
     Output
       # A tibble: 5 x 1
         .pred_class
@@ -15,8 +15,7 @@
 ---
 
     Code
-      predict(test_model, dplyr::tibble(x1 = letters[1:5], x2 = rev(letters)[1:5]),
-      type = "prob")
+      preds_prob
     Output
       # A tibble: 5 x 2
         .pred_a .pred_b
