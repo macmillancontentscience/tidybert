@@ -2,22 +2,6 @@
 # move them somewhere and export them, so let's make sure they work on their
 # own.
 test_that("character checks work", {
-  expect_snapshot(
-    .check_predictors_are_character(
-      data.frame(a = 1:26, b = letters)
-    )
-  )
-  expect_snapshot(
-    .check_predictors_are_character(
-      data.frame(a = 1:26 + 0.1, b = 1:26)
-    )
-  )
-  expect_snapshot(
-    .check_predictors_are_character(
-      data.frame(a = rev(letters), b = letters)
-    )
-  )
-
   expect_error(
     .validate_predictors_are_character(
       data.frame(a = 1:26, b = letters)
@@ -44,6 +28,24 @@ test_that("character checks work", {
   expect_identical(
     .validate_predictors_are_character(properly_character),
     properly_character
+  )
+
+  # Also check snapshots, but do that at the end so CRAN-style checks don't stop
+  # early.
+  expect_snapshot(
+    .check_predictors_are_character(
+      data.frame(a = 1:26, b = letters)
+    )
+  )
+  expect_snapshot(
+    .check_predictors_are_character(
+      data.frame(a = 1:26 + 0.1, b = 1:26)
+    )
+  )
+  expect_snapshot(
+    .check_predictors_are_character(
+      data.frame(a = rev(letters), b = letters)
+    )
   )
 })
 

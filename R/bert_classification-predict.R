@@ -52,13 +52,19 @@ predict.bert_classification <- function(object,
 #' @return A tibble with output dependent on the type.
 #' @keywords internal
 .predict_bert_classification_bridge <- function(type, object, predictors) {
+  # Prepare the input.
   predictors_ds <- torchtransformers::dataset_bert(
     x = predictors,
     y = NULL,
     n_tokens = object$n_tokens
   )
 
+  # Make sure the model is properly loaded.
+  .check_luz_model_serialization(object$luz_model)
+
   predict_function <- .get_bert_classification_predict_function(type)
+
+  # Actually do the prediction.
   predictions <- predict_function(object, predictors_ds)
 
   hardhat::validate_prediction_size(predictions, predictors)
@@ -117,7 +123,7 @@ predict.bert_classification <- function(object,
 
   predictions <- factor(
     predictions,
-    levels = seq_len(length(object$outcome_levels)),
+    levels = seq_along(object$outcome_levels),
     labels = object$outcome_levels
   )
 

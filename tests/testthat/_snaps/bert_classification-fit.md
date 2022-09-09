@@ -19,11 +19,14 @@
       i Training:
       
       -- Model -----------------------------------------------------------------------
-      An `nn_module` containing 4,369,666 parameters.
+      An `nn_module` containing 4,369,667 parameters.
       
       -- Modules ---------------------------------------------------------------------
       * bert: <BERT> #4,369,408 parameters
       * linear: <nn_linear> #258 parameters
+      
+      -- Parameters ------------------------------------------------------------------
+      * .check: Float [1:1]
       
       $outcome_levels
       [1] "a" "b"
@@ -51,15 +54,18 @@
       Metrics observed in the last epoch.
       
       i Training:
-      loss: 0.885
+      loss: 0.9203
       acc: 0.5
       
       -- Model -----------------------------------------------------------------------
-      An `nn_module` containing 4,369,666 parameters.
+      An `nn_module` containing 4,369,667 parameters.
       
       -- Modules ---------------------------------------------------------------------
       * bert: <BERT> #4,369,408 parameters
       * linear: <nn_linear> #258 parameters
+      
+      -- Parameters ------------------------------------------------------------------
+      * .check: Float [1:1]
       
       $outcome_levels
       [1] "a" "b"
@@ -87,15 +93,18 @@
       Metrics observed in the last epoch.
       
       i Training:
-      loss: 0.9744
+      loss: 0.977
       acc: 0.4583
       
       -- Model -----------------------------------------------------------------------
-      An `nn_module` containing 4,369,666 parameters.
+      An `nn_module` containing 4,369,667 parameters.
       
       -- Modules ---------------------------------------------------------------------
       * bert: <BERT> #4,369,408 parameters
       * linear: <nn_linear> #258 parameters
+      
+      -- Parameters ------------------------------------------------------------------
+      * .check: Float [1:1]
       
       $outcome_levels
       [1] "a" "b"
@@ -123,15 +132,18 @@
       Metrics observed in the last epoch.
       
       i Training:
-      loss: 0.9744
+      loss: 0.977
       acc: 0.4583
       
       -- Model -----------------------------------------------------------------------
-      An `nn_module` containing 4,369,666 parameters.
+      An `nn_module` containing 4,369,667 parameters.
       
       -- Modules ---------------------------------------------------------------------
       * bert: <BERT> #4,369,408 parameters
       * linear: <nn_linear> #258 parameters
+      
+      -- Parameters ------------------------------------------------------------------
+      * .check: Float [1:1]
       
       $outcome_levels
       [1] "a" "b"
@@ -159,15 +171,18 @@
       Metrics observed in the last epoch.
       
       i Training:
-      loss: 0.885
+      loss: 0.9203
       acc: 0.5
       
       -- Model -----------------------------------------------------------------------
-      An `nn_module` containing 4,369,666 parameters.
+      An `nn_module` containing 4,369,667 parameters.
       
       -- Modules ---------------------------------------------------------------------
       * bert: <BERT> #4,369,408 parameters
       * linear: <nn_linear> #258 parameters
+      
+      -- Parameters ------------------------------------------------------------------
+      * .check: Float [1:1]
       
       $outcome_levels
       [1] "a" "b"

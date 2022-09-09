@@ -71,7 +71,9 @@ tokenized <- torchtransformers::tokenize_bert(text_inputs$segment1,
 Load a pretrained BERT model and pass in the input:
 
 ```{r}
-bert_model <- torchtransformers::make_and_load_bert(model_name = "bert_base_uncased")
+bert_model <- torchtransformers::make_and_load_bert(
+  model_name = "bert_base_uncased"
+)
 
 bert_model$eval() 
 bert_output <- bert_model(torch::torch_tensor(tokenized$token_ids), 
