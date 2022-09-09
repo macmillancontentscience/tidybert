@@ -42,7 +42,7 @@ model_bert_linear <- torch::nn_module(
     # model. Based on https://github.com/mlverse/tabnet/blob/e08f76dbdb0e9bc1bc395ee081b874ee1fa80367/R/tab-network.R#L398
     # TODO: Should this go in torchtransformers, or maybe even torch?
     self$.check <- torch::nn_parameter(
-      torch::torch_tensor(1, requires_grad = TRUE)
+      torch::torch_tensor(1, requires_grad = FALSE)
     )
   },
   forward = function(x) {
