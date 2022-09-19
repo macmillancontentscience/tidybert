@@ -72,14 +72,9 @@ tokenized <- torchtransformers::tokenize_bert(
 Load a pretrained BERT model and pass in the input:
 
 ```{r}
-# If we're downloading this model for the first time, it can take longer than
-# the default timeout.
-# TODO: Build this into torchtransformers and/or dlr.
-old_timeout <- options(timeout = 1000)
 bert_model <- torchtransformers::model_bert_pretrained(
   bert_type = "bert_base_uncased"
 )
-options(old_timeout)
 
 bert_model$eval() 
 bert_output <- bert_model(

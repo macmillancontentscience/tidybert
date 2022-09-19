@@ -79,9 +79,6 @@ process_mnli <- function(source_file) {
   return(mnli_tibbles)
 }
 
-# By default downloading large files often fails. Increase the timeout.
-old_timeout <- options(timeout = 1000)
-
 data_url <- "https://dl.fbaipublicfiles.com/glue/data/MNLI.zip"
 
 mnli_tibbles <- dlr::read_or_cache(
@@ -89,9 +86,6 @@ mnli_tibbles <- dlr::read_or_cache(
   appname = "tidybert",
   process_f = process_mnli
 )
-
-# Restore the timeout.
-options(old_timeout)
 ```
 
 ## Fit the Model
