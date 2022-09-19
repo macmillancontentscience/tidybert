@@ -4,11 +4,11 @@
 \alias{model_bert_linear}
 \title{Pretrained BERT Model with Linear Output}
 \usage{
-model_bert_linear(model_name = "bert_tiny_uncased", output_dim = 1L)
+model_bert_linear(bert_type = "bert_tiny_uncased", output_dim = 1L)
 }
 \arguments{
-\item{model_name}{Character; which flavor of BERT to use. See
-\code{\link[torchtransformers]{available_berts}} for known models.}
+\item{bert_type}{Character; which flavor of BERT to use. See
+\code{\link[torchtransformers:available_berts]{available_berts()}} for known models.}
 
 \item{output_dim}{Integer; the target number of output dimensions.}
 }

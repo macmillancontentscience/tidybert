@@ -6,7 +6,7 @@
       An `nn_module` containing 4,369,538 parameters.
       
       -- Modules ---------------------------------------------------------------------
-      * bert: <BERT> #4,369,408 parameters
+      * bert: <BERT_pretrained> #4,369,408 parameters
       * linear: <nn_linear> #129 parameters
       
       -- Parameters ------------------------------------------------------------------
@@ -58,7 +58,7 @@
       An `nn_module` containing 4,369,925 parameters.
       
       -- Modules ---------------------------------------------------------------------
-      * bert: <BERT> #4,369,408 parameters
+      * bert: <BERT_pretrained> #4,369,408 parameters
       * linear: <nn_linear> #516 parameters
       
       -- Parameters ------------------------------------------------------------------
@@ -110,7 +110,7 @@
       An `nn_module` containing 28,502,532 parameters.
       
       -- Modules ---------------------------------------------------------------------
-      * bert: <BERT> #28,500,992 parameters
+      * bert: <BERT_pretrained> #28,500,992 parameters
       * linear: <nn_linear> #1,539 parameters
       
       -- Parameters ------------------------------------------------------------------

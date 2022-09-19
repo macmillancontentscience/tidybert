@@ -1,5 +1,5 @@
 test_that("bert output tidiers work", {
-  bert_model <- torchtransformers::make_and_load_bert("bert_tiny_uncased")
+  bert_model <- torchtransformers::model_bert_pretrained("bert_tiny_uncased")
 
   test_input_1 <- c("Why didn't the chicken cross the road?",
                     "Why didn't the chicken cross the road?")
@@ -14,11 +14,14 @@ test_that("bert output tidiers work", {
                                                 test_input_2,
                                                 n_tokens = n_tokens)
   # format the input
-  token_input <- torch::torch_tensor(tokenized$token_ids)
-  tt_input <- torch::torch_tensor(tokenized$token_type_ids)
+  x <- list(
+    token_ids = torch::torch_tensor(tokenized$token_ids),
+    token_type_ids = torch::torch_tensor(tokenized$token_type_ids)
+  )
+
 
   bert_model$eval()
-  bert_output <- bert_model(token_input, tt_input)
+  bert_output <- bert_model(x)
   tidy_out <- tidy_bert_output(bert_output, tokenized)
 
   # check the column names and the first few values

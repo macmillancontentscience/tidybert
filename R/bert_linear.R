@@ -20,7 +20,7 @@
 #' to attach a classification head to BERT using other techniques, but here we
 #' use this simple technique.
 #'
-#' @inheritParams torchtransformers::make_and_load_bert
+#' @inheritParams torchtransformers::model_bert_pretrained
 #' @param output_dim Integer; the target number of output dimensions.
 #'
 #' @return A torch neural net model with pretrained BERT weights and a final
@@ -28,11 +28,11 @@
 #' @export
 model_bert_linear <- torch::nn_module(
   "bert_linear",
-  initialize = function(model_name = "bert_tiny_uncased", output_dim = 1L) {
+  initialize = function(bert_type = "bert_tiny_uncased", output_dim = 1L) {
     embedding_size <- torchtransformers::config_bert(
-      model_name, "embedding_size"
+      bert_type, "embedding_size"
     )
-    self$bert <- torchtransformers::make_and_load_bert(model_name)
+    self$bert <- torchtransformers::model_bert_pretrained(bert_type)
     # After pooled bert output, do a final dense layer.
     self$linear <- torch::nn_linear(
       in_features = embedding_size,
@@ -46,7 +46,7 @@ model_bert_linear <- torch::nn_module(
     )
   },
   forward = function(x) {
-    output <- self$bert(x$token_ids, x$token_type_ids)
+    output <- self$bert(x)
 
     # Take the output embeddings from the last layer.
     output <- output$output_embeddings

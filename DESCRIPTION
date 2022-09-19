@@ -1,6 +1,6 @@
 Package: tidybert
 Title: Tidy BERT-like Models
-Version: 0.0.0.9500
+Version: 0.0.0.9600
 Authors@R: c(
     person(given = "Jonathan",
            family = "Bratt",
@@ -34,7 +34,7 @@ Imports:
     stats,
     tibble,
     torch,
-    torchtransformers (>= 0.0.0.9300)
+    torchtransformers (>= 0.0.0.9400)
 Remotes:
     macmillancontentscience/torchtransformers
 Suggests: 

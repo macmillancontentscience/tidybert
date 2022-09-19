@@ -53,7 +53,7 @@ predict.bert_classification <- function(object,
 #' @keywords internal
 .predict_bert_classification_bridge <- function(type, object, predictors) {
   # Prepare the input.
-  predictors_ds <- torchtransformers::dataset_bert(
+  predictors_ds <- torchtransformers::dataset_bert_pretrained(
     x = predictors,
     y = NULL,
     n_tokens = object$n_tokens
@@ -101,7 +101,17 @@ predict.bert_classification <- function(object,
   # Get the prediction output and apply softmax.
   return(
     torch::nnf_softmax(
-      input = predict(object$luz_model, predictors),
+      input = predict(
+        object$luz_model,
+        predictors,
+        # TODO: Allow additional luz:::predict.luz_module_fitted arguments.
+        callbacks = list(
+          torchtransformers::luz_callback_bert_tokenize(
+            submodel_name = "bert",
+            verbose = interactive()
+          )
+        )
+      ),
       dim = 2
     )
   )

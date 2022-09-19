@@ -85,9 +85,9 @@ bert_classification.data.frame <- function(x,
                                            y,
                                            valid_x = 0.1,
                                            valid_y = NULL,
-                                           model_name = "bert_tiny_uncased",
+                                           bert_type = "bert_tiny_uncased",
                                            n_tokens = torchtransformers::config_bert(
-                                             model_name, "max_tokens"
+                                             bert_type, "max_tokens"
                                            ),
                                            loss = torch::nn_cross_entropy_loss(),
                                            optimizer = torch::optim_adam,
@@ -104,7 +104,7 @@ bert_classification.data.frame <- function(x,
     .bert_classification_bridge(
       processed,
       valid_data = valid_data,
-      model_name = model_name,
+      bert_type = bert_type,
       n_tokens = n_tokens,
       loss = loss,
       optimizer = optimizer,
@@ -125,9 +125,9 @@ bert_classification.matrix <- function(x,
                                        y,
                                        valid_x = 0.1,
                                        valid_y = NULL,
-                                       model_name = "bert_tiny_uncased",
+                                       bert_type = "bert_tiny_uncased",
                                        n_tokens = torchtransformers::config_bert(
-                                         model_name, "max_tokens"
+                                         bert_type, "max_tokens"
                                        ),
                                        loss = torch::nn_cross_entropy_loss(),
                                        optimizer = torch::optim_adam,
@@ -144,7 +144,7 @@ bert_classification.matrix <- function(x,
     .bert_classification_bridge(
       processed,
       valid_data = valid_data,
-      model_name = model_name,
+      bert_type = bert_type,
       n_tokens = n_tokens,
       loss = loss,
       optimizer = optimizer,
@@ -164,9 +164,9 @@ bert_classification.matrix <- function(x,
 bert_classification.formula <- function(formula,
                                         data,
                                         valid_data = 0.1,
-                                        model_name = "bert_tiny_uncased",
+                                        bert_type = "bert_tiny_uncased",
                                         n_tokens = torchtransformers::config_bert(
-                                          model_name, "max_tokens"
+                                          bert_type, "max_tokens"
                                         ),
                                         loss = torch::nn_cross_entropy_loss(),
                                         optimizer = torch::optim_adam,
@@ -191,7 +191,7 @@ bert_classification.formula <- function(formula,
     .bert_classification_bridge(
       processed,
       valid_data = valid_data,
-      model_name = model_name,
+      bert_type = bert_type,
       n_tokens = n_tokens,
       loss = loss,
       optimizer = optimizer,
@@ -265,9 +265,9 @@ bert_classification.formula <- function(formula,
 #' @keywords internal
 .bert_classification_bridge <- function(processed,
                                         valid_data = 0.1,
-                                        model_name = "bert_tiny_uncased",
+                                        bert_type = "bert_tiny_uncased",
                                         n_tokens = torchtransformers::config_bert(
-                                          model_name, "max_tokens"
+                                          bert_type, "max_tokens"
                                         ),
                                         loss = torch::nn_cross_entropy_loss(),
                                         optimizer = torch::optim_adam,
@@ -295,7 +295,7 @@ bert_classification.formula <- function(formula,
     predictors,
     outcome,
     valid_data = valid_data,
-    model_name = model_name,
+    bert_type = bert_type,
     n_tokens = n_tokens,
     loss = loss,
     optimizer = optimizer,
@@ -340,9 +340,9 @@ bert_classification.formula <- function(formula,
 .bert_classification_impl <- function(predictors,
                                       outcome,
                                       valid_data = 0.1,
-                                      model_name = "bert_tiny_uncased",
+                                      bert_type = "bert_tiny_uncased",
                                       n_tokens = torchtransformers::config_bert(
-                                        model_name, "max_tokens"
+                                        bert_type, "max_tokens"
                                       ),
                                       loss = torch::nn_cross_entropy_loss(),
                                       optimizer = torch::optim_adam,
@@ -353,27 +353,18 @@ bert_classification.formula <- function(formula,
                                       batch_size = 128,
                                       luz_opt_hparams = list(),
                                       ...) {
-  # Make sure n_tokens is valid for this model.
-  n_tokens <- min(
-    n_tokens,
-    torchtransformers::config_bert(
-      model_name, "max_tokens"
-    )
-  )
-
-  # Use the processed data to create a torch dataset.
-  torch_ready <- torchtransformers::dataset_bert(
+  # Use the processed data to create a torch dataset. We could tokenize here,
+  # but instead we let luz_callback_bert_tokenize sort that out below.
+  torch_ready <- torchtransformers::dataset_bert_pretrained(
     x = predictors,
-    y = outcome,
-    n_tokens = n_tokens
+    y = outcome
   )
 
   # Do the same for the validation data if it's a list.
   if (is.list(valid_data)) {
-    valid_data <- torchtransformers::dataset_bert(
+    valid_data <- torchtransformers::dataset_bert_pretrained(
       x = valid_data$predictors,
-      y = valid_data$outcomes,
-      n_tokens = n_tokens
+      y = valid_data$outcomes
     )
   }
 
@@ -389,7 +380,7 @@ bert_classification.formula <- function(formula,
   )
   fitted <- luz::set_hparams(
     fitted,
-    model_name = model_name,
+    bert_type = bert_type,
     output_dim = n_levels
   )
   fitted <- luz::set_opt_hparams(fitted, !!!luz_opt_hparams)
@@ -398,7 +389,15 @@ bert_classification.formula <- function(formula,
     torch_ready,
     epochs = epochs,
     valid_data = valid_data,
-    dataloader_options = list(batch_size = batch_size)
+    dataloader_options = list(batch_size = batch_size),
+    # TODO: Allow the user to send in more callbacks.
+    callbacks = list(
+      torchtransformers::luz_callback_bert_tokenize(
+        submodel_name = "bert",
+        n_tokens = n_tokens,
+        verbose = interactive()
+      )
+    )
   )
 
   return(fitted)
