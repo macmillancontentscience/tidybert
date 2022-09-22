@@ -56,8 +56,7 @@ text_inputs
 
 We want to produce contextual embeddings for these sequences.
 First we tokenize the input text into the format required by the model. 
-We'll use the `tokenize_bert` function exported from the {torchtransformers} package (the api here will likely be
-changing soon).
+We'll use the `tokenize_bert` function exported from the {torchtransformers} package (the api here will likely be changing soon).
 
 ```{r}
 # Set the number of tokens to pad/truncate the result to.
@@ -65,7 +64,12 @@ n_tokens <- 20L
 tokenized <- torchtransformers::tokenize_bert(
   text_inputs$segment1,
   text_inputs$segment2,
-  n_tokens = n_tokens
+  n_tokens = n_tokens,
+  # The tokenizer and vocabulary must match the model. While these are the
+  # defaults, we're calling it out here explicitly until we update this API to
+  # make it more straightforward.
+  tokenizer = wordpiece::wordpiece_tokenize,
+  vocab = wordpiece.data::wordpiece_vocab()
 )
 ```
 

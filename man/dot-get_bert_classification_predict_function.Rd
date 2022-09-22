@@ -7,8 +7,8 @@
 .get_bert_classification_predict_function(type)
 }
 \arguments{
-\item{type}{A single character. The type of predictions to generate.
-Valid options are:
+\item{type}{A single character. The type of predictions to generate. Valid
+options are:
 \itemize{
 \item \code{"class"} for "hard" class predictions.
 \item \code{"prob"} for class probabilities.

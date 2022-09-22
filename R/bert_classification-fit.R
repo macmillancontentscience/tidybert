@@ -17,6 +17,12 @@
 #' `bert_classification()` fits a classifier neural network in the style of
 #' [BERT from Google Research](https://github.com/google-research/bert).
 #'
+#' The generated model is a pretrained BERT model with a final dense linear
+#' layer to map the output to the outcome levels, constructed using
+#' [model_bert_linear()]. That pretrained model is fine-tuned on the provided
+#' training data. Input data (during both fitting and prediction) is
+#' automatically tokenized to match the tokenization expected by the BERT model.
+#'
 #' @param x Depending on the context:
 #'
 #'   * A __data frame__ of character predictors.
@@ -31,12 +37,11 @@
 #'   * A __matrix__ with 1 factor column.
 #'   * A factor __vector__.
 #'
-#' @param valid_x Depending on the context:
-#'   * A number between 0 and 1, representing the fraction of data to use for
-#'     model validation.
-#'   * Predictors in the same format as `x`. These predictors will be used for
-#'     model validation.
-#'   * `NULL`, in which case no data will be used for model validation.
+#' @param valid_x Depending on the context: * A number between 0 and 1,
+#'   representing the fraction of data to use for model validation. * Predictors
+#'   in the same format as `x`. These predictors will be used for model
+#'   validation. * `NULL`, in which case no data will be used for model
+#'   validation.
 #'
 #' @param valid_y When `valid_x` is a set of predictors, `valid_y` should be
 #'   outcomes in the same format as `y`.
@@ -44,7 +49,7 @@
 #' @param data When a __formula__ is used, `data` is specified as:
 #'
 #'   * A __data frame__ containing both the predictors and the outcome. The
-#'     predictors should be character vectors. The outcome should be a factor.
+#'   predictors should be character vectors. The outcome should be a factor.
 #'
 #' @param formula A formula specifying the outcome term on the left-hand side,
 #'   and the predictor terms on the right-hand side.
@@ -330,7 +335,7 @@ bert_classification.formula <- function(formula,
 #' @param luz_opt_hparams List; parameters to pass on to
 #'   \code{\link[luz]{set_opt_hparams}} to initialize the optimizer.
 #' @inheritParams model_bert_linear
-#' @inheritParams torchtransformers::dataset_bert
+#' @inheritParams torchtransformers::dataset_bert_pretrained
 #' @inheritParams luz::setup
 #' @inheritParams luz::fit.luz_module_generator
 #' @inheritParams torch::dataloader

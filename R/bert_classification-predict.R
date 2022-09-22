@@ -12,24 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#' Predict from a `bert_classification`
+#' Predict from a `bert_classification` model.
 #'
 #' @param object A `bert_classification` object.
 #'
-#' @param new_data A data frame or matrix of new predictors.
+#' @param new_data A data frame or matrix of new character predictors. This data
+#'   is automatically tokenized to match the tokenization expected by the BERT
+#'   model.
 #'
-#' @param type A single character. The type of predictions to generate.
-#' Valid options are:
+#' @param type A single character. The type of predictions to generate. Valid
+#'   options are:
 #'
-#' - `"class"` for "hard" class predictions.
-#' - `"prob"` for class probabilities.
+#'   - `"class"` for "hard" class predictions.
+#'   - `"prob"` for class probabilities.
 #'
 #' @param ... Not used, but required for extensibility.
 #'
 #' @return
 #'
-#' A tibble of predictions. The number of rows in the tibble is guaranteed
-#' to be the same as the number of rows in `new_data`.
+#' A tibble of predictions. The number of rows in the tibble is guaranteed to be
+#' the same as the number of rows in `new_data`.
 #'
 #' @export
 predict.bert_classification <- function(object,

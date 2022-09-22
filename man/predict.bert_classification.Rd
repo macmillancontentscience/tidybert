@@ -2,17 +2,19 @@
 % Please edit documentation in R/bert_classification-predict.R
 \name{predict.bert_classification}
 \alias{predict.bert_classification}
-\title{Predict from a \code{bert_classification}}
+\title{Predict from a \code{bert_classification} model.}
 \usage{
 \method{predict}{bert_classification}(object, new_data, type = c("class", "prob"), ...)
 }
 \arguments{
 \item{object}{A \code{bert_classification} object.}
 
-\item{new_data}{A data frame or matrix of new predictors.}
+\item{new_data}{A data frame or matrix of new character predictors. This data
+is automatically tokenized to match the tokenization expected by the BERT
+model.}
 
-\item{type}{A single character. The type of predictions to generate.
-Valid options are:
+\item{type}{A single character. The type of predictions to generate. Valid
+options are:
 \itemize{
 \item \code{"class"} for "hard" class predictions.
 \item \code{"prob"} for class probabilities.
@@ -21,9 +23,9 @@ Valid options are:
 \item{...}{Not used, but required for extensibility.}
 }
 \value{
-A tibble of predictions. The number of rows in the tibble is guaranteed
-to be the same as the number of rows in \code{new_data}.
+A tibble of predictions. The number of rows in the tibble is guaranteed to be
+the same as the number of rows in \code{new_data}.
 }
 \description{
-Predict from a \code{bert_classification}
+Predict from a \code{bert_classification} model.
 }

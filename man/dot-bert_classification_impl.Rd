@@ -30,8 +30,8 @@ dataset.}
 \item{bert_type}{Character; which flavor of BERT to use. See
 \code{\link[torchtransformers:available_berts]{available_berts()}} for known models.}
 
-\item{n_tokens}{Integer scalar; the number of tokens expected for each
-example.}
+\item{n_tokens}{An integer scalar indicating the number of tokens in the
+output.}
 
 \item{loss}{(\code{function}, optional) An optional function with the signature
 \verb{function(input, target)}. It's only requires if your \code{nn_module} doesn't
