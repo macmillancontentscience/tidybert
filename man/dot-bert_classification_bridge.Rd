@@ -7,8 +7,8 @@
 .bert_classification_bridge(
   processed,
   valid_data = 0.1,
-  model_name = "bert_tiny_uncased",
-  n_tokens = torchtransformers::config_bert(model_name, "max_tokens"),
+  bert_type = "bert_tiny_uncased",
+  n_tokens = torchtransformers::config_bert(bert_type, "max_tokens"),
   loss = torch::nn_cross_entropy_loss(),
   optimizer = torch::optim_adam,
   metrics = list(luz::luz_metric_accuracy()),
@@ -24,11 +24,11 @@
 \item{valid_data}{Either a number between 0 and 1, or a blueprint-processed
 dataset.}
 
-\item{model_name}{Character; which flavor of BERT to use. See
-\code{\link[torchtransformers]{available_berts}} for known models.}
+\item{bert_type}{Character; which flavor of BERT to use. See
+\code{\link[torchtransformers:available_berts]{available_berts()}} for known models.}
 
-\item{n_tokens}{Integer scalar; the number of tokens expected for each
-example.}
+\item{n_tokens}{An integer scalar indicating the number of tokens in the
+output.}
 
 \item{loss}{(\code{function}, optional) An optional function with the signature
 \verb{function(input, target)}. It's only requires if your \code{nn_module} doesn't

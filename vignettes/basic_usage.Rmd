@@ -56,28 +56,37 @@ text_inputs
 
 We want to produce contextual embeddings for these sequences.
 First we tokenize the input text into the format required by the model. 
-We'll use the `tokenize_bert` function exported from the {torchtransformers} package (the api here will likely be
-changing soon).
+We'll use the `tokenize_bert` function exported from the {torchtransformers} package (the api here will likely be changing soon).
 
 ```{r}
 # Set the number of tokens to pad/truncate the result to.
 n_tokens <- 20L
-n_inputs <- length(text_inputs)
-tokenized <- torchtransformers::tokenize_bert(text_inputs$segment1,
-                                              text_inputs$segment2,
-                                              n_tokens = n_tokens)
+tokenized <- torchtransformers::tokenize_bert(
+  text_inputs$segment1,
+  text_inputs$segment2,
+  n_tokens = n_tokens,
+  # The tokenizer and vocabulary must match the model. While these are the
+  # defaults, we're calling it out here explicitly until we update this API to
+  # make it more straightforward.
+  tokenizer = wordpiece::wordpiece_tokenize,
+  vocab = wordpiece.data::wordpiece_vocab()
+)
 ```
 
 Load a pretrained BERT model and pass in the input:
 
 ```{r}
-bert_model <- torchtransformers::make_and_load_bert(
-  model_name = "bert_base_uncased"
+bert_model <- torchtransformers::model_bert_pretrained(
+  bert_type = "bert_base_uncased"
 )
 
 bert_model$eval() 
-bert_output <- bert_model(torch::torch_tensor(tokenized$token_ids), 
-                          torch::torch_tensor(tokenized$token_type_ids))
+bert_output <- bert_model(
+  list(
+    token_ids = torch::torch_tensor(tokenized$token_ids), 
+    token_type_ids = torch::torch_tensor(tokenized$token_type_ids)
+  )
+)
 ```
 
 ## Extracting embeddings in tidy form
@@ -171,7 +180,7 @@ process_synant <- function(source_file) {
 synant_url <- "https://www.gutenberg.org/files/51155/old/20190304-51155.csv"
 synant_tidy <- dlr::read_or_cache(
   source_path = synant_url,
-  appname = "torchtransformers",
+  appname = "tidybert",
   process_f = process_synant
 )
 
@@ -202,7 +211,7 @@ The minimum number of tokens we will need is five, but some of the words will co
 bert_classifier <- bert_classification(
   x = dplyr::select(training_set, word, other_word),
   y = dplyr::select(training_set, target),
-  model_name = "bert_tiny_uncased",
+  bert_type = "bert_tiny_uncased",
   n_tokens = 14L, # don't need many tokens for this
   epochs = 5L
 )
@@ -213,16 +222,16 @@ Let's see what the predictions are on the test set.
 ```{r, eval = FALSE}
 preds <- predict(bert_classifier, dplyr::select(testing_set, word, other_word))
 mean(preds$.pred_class == testing_set$target)
-# [1] 0.7479572 # YMMV
+# [1] 0.8206537 # YMMV
 
 # We can also try arbitrary input.
 predict(
-      bert_classifier,
-      dplyr::tibble(
-        word = c("spacious", "spacious"),
-        other_word = c("cramped", "roomy")
-      )
-    )
+  bert_classifier,
+  dplyr::tibble(
+    word = c("spacious", "spacious"),
+    other_word = c("cramped", "roomy")
+  )
+)
 # # A tibble: 2 × 1
 #   .pred_class
 #   <fct>      

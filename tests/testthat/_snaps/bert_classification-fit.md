@@ -22,7 +22,7 @@
       An `nn_module` containing 4,369,667 parameters.
       
       -- Modules ---------------------------------------------------------------------
-      * bert: <BERT> #4,369,408 parameters
+      * bert: <BERT_pretrained> #4,369,408 parameters
       * linear: <nn_linear> #258 parameters
       
       -- Parameters ------------------------------------------------------------------
@@ -61,7 +61,7 @@
       An `nn_module` containing 4,369,667 parameters.
       
       -- Modules ---------------------------------------------------------------------
-      * bert: <BERT> #4,369,408 parameters
+      * bert: <BERT_pretrained> #4,369,408 parameters
       * linear: <nn_linear> #258 parameters
       
       -- Parameters ------------------------------------------------------------------
@@ -100,7 +100,7 @@
       An `nn_module` containing 4,369,667 parameters.
       
       -- Modules ---------------------------------------------------------------------
-      * bert: <BERT> #4,369,408 parameters
+      * bert: <BERT_pretrained> #4,369,408 parameters
       * linear: <nn_linear> #258 parameters
       
       -- Parameters ------------------------------------------------------------------
@@ -139,7 +139,7 @@
       An `nn_module` containing 4,369,667 parameters.
       
       -- Modules ---------------------------------------------------------------------
-      * bert: <BERT> #4,369,408 parameters
+      * bert: <BERT_pretrained> #4,369,408 parameters
       * linear: <nn_linear> #258 parameters
       
       -- Parameters ------------------------------------------------------------------
@@ -178,7 +178,7 @@
       An `nn_module` containing 4,369,667 parameters.
       
       -- Modules ---------------------------------------------------------------------
-      * bert: <BERT> #4,369,408 parameters
+      * bert: <BERT_pretrained> #4,369,408 parameters
       * linear: <nn_linear> #258 parameters
       
       -- Parameters ------------------------------------------------------------------

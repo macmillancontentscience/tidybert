@@ -17,8 +17,8 @@ bert_classification(x, ...)
   y,
   valid_x = 0.1,
   valid_y = NULL,
-  model_name = "bert_tiny_uncased",
-  n_tokens = torchtransformers::config_bert(model_name, "max_tokens"),
+  bert_type = "bert_tiny_uncased",
+  n_tokens = torchtransformers::config_bert(bert_type, "max_tokens"),
   loss = torch::nn_cross_entropy_loss(),
   optimizer = torch::optim_adam,
   metrics = list(luz::luz_metric_accuracy()),
@@ -33,8 +33,8 @@ bert_classification(x, ...)
   y,
   valid_x = 0.1,
   valid_y = NULL,
-  model_name = "bert_tiny_uncased",
-  n_tokens = torchtransformers::config_bert(model_name, "max_tokens"),
+  bert_type = "bert_tiny_uncased",
+  n_tokens = torchtransformers::config_bert(bert_type, "max_tokens"),
   loss = torch::nn_cross_entropy_loss(),
   optimizer = torch::optim_adam,
   metrics = list(luz::luz_metric_accuracy()),
@@ -48,8 +48,8 @@ bert_classification(x, ...)
   formula,
   data,
   valid_data = 0.1,
-  model_name = "bert_tiny_uncased",
-  n_tokens = torchtransformers::config_bert(model_name, "max_tokens"),
+  bert_type = "bert_tiny_uncased",
+  n_tokens = torchtransformers::config_bert(bert_type, "max_tokens"),
   loss = torch::nn_cross_entropy_loss(),
   optimizer = torch::optim_adam,
   metrics = list(luz::luz_metric_accuracy()),
@@ -90,11 +90,11 @@ model validation.
 \item{valid_y}{When \code{valid_x} is a set of predictors, \code{valid_y} should be
 outcomes in the same format as \code{y}.}
 
-\item{model_name}{Character; which flavor of BERT to use. See
-\code{\link[torchtransformers]{available_berts}} for known models.}
+\item{bert_type}{Character; which flavor of BERT to use. See
+\code{\link[torchtransformers:available_berts]{available_berts()}} for known models.}
 
-\item{n_tokens}{Integer scalar; the number of tokens expected for each
-example.}
+\item{n_tokens}{An integer scalar indicating the number of tokens in the
+output.}
 
 \item{loss}{(\code{function}, optional) An optional function with the signature
 \verb{function(input, target)}. It's only requires if your \code{nn_module} doesn't
@@ -144,4 +144,11 @@ A \code{bert_classification} object.
 \description{
 \code{bert_classification()} fits a classifier neural network in the style of
 \href{https://github.com/google-research/bert}{BERT from Google Research}.
+}
+\details{
+The generated model is a pretrained BERT model with a final dense linear
+layer to map the output to the outcome levels, constructed using
+\code{\link[=model_bert_linear]{model_bert_linear()}}. That pretrained model is fine-tuned on the provided
+training data. Input data (during both fitting and prediction) is
+automatically tokenized to match the tokenization expected by the BERT model.
 }

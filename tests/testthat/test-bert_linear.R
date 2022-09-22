@@ -14,7 +14,7 @@ test_that("model_bert_linear produced the expected model", {
 
   output_dim <- 3L
   test_result <- model_bert_linear(
-    model_name = "bert_small_uncased",
+    bert_type = "bert_small_uncased",
     output_dim = output_dim
   )
   expect_snapshot(test_result)

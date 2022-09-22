@@ -79,9 +79,6 @@ process_mnli <- function(source_file) {
   return(mnli_tibbles)
 }
 
-# By default downloading large files often fails. Increase the timeout.
-old_timeout <- options(timeout = 1000)
-
 data_url <- "https://dl.fbaipublicfiles.com/glue/data/MNLI.zip"
 
 mnli_tibbles <- dlr::read_or_cache(
@@ -89,9 +86,6 @@ mnli_tibbles <- dlr::read_or_cache(
   appname = "tidybert",
   process_f = process_mnli
 )
-
-# Restore the timeout.
-options(old_timeout)
 ```
 
 ## Fit the Model
@@ -109,7 +103,7 @@ torch::torch_manual_seed(1234)
 entailment_fit_formula <- bert_classification(
   gold_label ~ sentence1 + sentence2, 
   data = train_head,
-  model_name = "bert_tiny_uncased",
+  bert_type = "bert_tiny_uncased",
   n_tokens = 128,
   epochs = 1
 )
@@ -119,7 +113,7 @@ torch::torch_manual_seed(1234)
 entailment_fit_dataframe <- bert_classification(
   x = dplyr::select(train_head, sentence1, sentence2),
   y = train_head$gold_label,
-  model_name = "bert_tiny_uncased",
+  bert_type = "bert_tiny_uncased",
   n_tokens = 128,
   epochs = 1
 )
@@ -129,7 +123,7 @@ torch::torch_manual_seed(1234)
 entailment_fit_matrix <- bert_classification(
   x = as.matrix(dplyr::select(train_head, sentence1, sentence2)),
   y = train_head$gold_label,
-  model_name = "bert_tiny_uncased",
+  bert_type = "bert_tiny_uncased",
   n_tokens = 128,
   epochs = 1
 )
