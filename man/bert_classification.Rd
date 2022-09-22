@@ -78,11 +78,14 @@ specified as:
 \item A factor \strong{vector}.
 }}
 
-\item{valid_x}{Depending on the context: * A number between 0 and 1,
-representing the fraction of data to use for model validation. * Predictors
-in the same format as \code{x}. These predictors will be used for model
-validation. * \code{NULL}, in which case no data will be used for model
-validation.}
+\item{valid_x}{Depending on the context:
+\itemize{
+\item A number between 0 and 1, representing the fraction of data to use for
+model validation.
+\item Predictors in the same format as \code{x}. These predictors will be used for
+model validation.
+\item \code{NULL}, in which case no data will be used for model validation.
+}}
 
 \item{valid_y}{When \code{valid_x} is a set of predictors, \code{valid_y} should be
 outcomes in the same format as \code{y}.}

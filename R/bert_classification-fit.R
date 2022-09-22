@@ -37,11 +37,13 @@
 #'   * A __matrix__ with 1 factor column.
 #'   * A factor __vector__.
 #'
-#' @param valid_x Depending on the context: * A number between 0 and 1,
-#'   representing the fraction of data to use for model validation. * Predictors
-#'   in the same format as `x`. These predictors will be used for model
-#'   validation. * `NULL`, in which case no data will be used for model
-#'   validation.
+#' @param valid_x Depending on the context:
+#'
+#'   * A number between 0 and 1, representing the fraction of data to use for
+#'     model validation.
+#'   * Predictors in the same format as `x`. These predictors will be used for
+#'     model validation.
+#'   * `NULL`, in which case no data will be used for model validation.
 #'
 #' @param valid_y When `valid_x` is a set of predictors, `valid_y` should be
 #'   outcomes in the same format as `y`.
