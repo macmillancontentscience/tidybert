@@ -17,8 +17,8 @@
 #' Construct a BERT model with pretrained weights, and add a final dense linear
 #' layer to transform to a desired number of dimensions. Note that we only use
 #' the CLS token output from the final layer of the BERT model. It is possible
-#' to attach a classification head to BERT using other techniques, but here we
-#' use this simple technique.
+#' to attach a classification or regression head to BERT using other techniques,
+#' but here we use this simple technique.
 #'
 #' @inheritParams torchtransformers::model_bert_pretrained
 #' @param output_dim Integer; the target number of output dimensions.
@@ -51,10 +51,11 @@ model_bert_linear <- torch::nn_module(
     # Take the output embeddings from the last layer.
     output <- output$output_embeddings
     output <- output[[length(output)]]
-    # Take the [CLS] token embedding for classification.
+    # Take the [CLS] token embedding for classification or regression.
     output <- output[ , 1, ]
     # Apply the last dense layer to the pooled output.
     output <- self$linear(output)
+    output <- torch::torch_squeeze(output)
     return(output)
   }
 )

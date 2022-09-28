@@ -1,6 +1,6 @@
 Package: tidybert
 Title: Tidy BERT-like Models
-Version: 0.0.0.9600
+Version: 0.0.0.9700
 Authors@R: c(
     person(given = "Jonathan",
            family = "Bratt",
@@ -34,7 +34,7 @@ Imports:
     stats,
     tibble,
     torch,
-    torchtransformers (>= 0.0.0.9400)
+    torchtransformers (>= 0.0.0.9500)
 Remotes:
     macmillancontentscience/torchtransformers
 Suggests: 
@@ -45,7 +45,9 @@ Suggests:
     dlr,
     rsample,
     tidyr,
-    stringr
+    stringr,
+    wordpiece,
+    wordpiece.data
 URL: https://github.com/macmillancontentscience/tidybert
 BugReports: https://github.com/macmillancontentscience/tidybert/issues
 Config/testthat/edition: 3

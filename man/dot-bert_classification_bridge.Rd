@@ -41,12 +41,12 @@ the model parameters.}
 \item{metrics}{(\code{list}, optional) A list of metrics to be tracked during
 the training procedure.}
 
-\item{epochs}{(int) The maximum number of epochs for training the model. If a
-single value is provided, this is taken to be the \code{max_epochs} and
-\code{min_epochs} is set to 0. If a vector of two numbers is provided, the first
-value is \code{min_epochs} and the second value is \code{max_epochs}. The minimum and
-maximum number of epochs are included in the context object as
-\code{ctx$min_epochs} and \code{ctx$max_epochs}, respectively.}
+\item{epochs}{(int) The maximum number of epochs for training the model.
+If a single value is provided, this is taken to be the \code{max_epochs} and
+\code{min_epochs} is set to 0. If a vector of two numbers is provided, the
+first value is \code{min_epochs} and the second value is \code{max_epochs}.
+The minimum and maximum number of epochs are included in the context
+object as \code{ctx$min_epochs} and \code{ctx$max_epochs}, respectively.}
 
 \item{batch_size}{(int, optional): how many samples per batch to load
 (default: \code{1}).}
