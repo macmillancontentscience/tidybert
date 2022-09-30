@@ -47,6 +47,7 @@ Suggests:
     recipes,
     rsample,
     stringr,
+    tidymodels,
     tidyr,
     wordpiece,
     wordpiece.data

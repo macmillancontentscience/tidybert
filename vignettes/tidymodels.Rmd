@@ -1,0 +1,161 @@
+---
+title: "Working in the tidymodels Ecosystem"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Working in the tidymodels Ecosystem}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+```{r setup}
+library(tidybert)
+suppressPackageStartupMessages(library(tidymodels))
+tidymodels::tidymodels_prefer()
+```
+
+`{tidybert}` is designed to work in the `{tidymodels}` ecosytem.
+`{tidybert}` models can be included in `{workflows}`, and several parameters can be tuned using `{tune}`.
+
+We'll demonstrate this process using the data from the Classification vignette.
+
+```{r data}
+# Set up a processor function for {dlr} to load the data.
+process_mnli <- function(source_file) {
+  dataset_names <- c(
+    "train",
+    "dev_matched",
+    "dev_mismatched",
+    "test_matched",
+    "test_mismatched"
+  )
+  # Also make those the names so purrr uses them.
+  names(dataset_names) <- dataset_names
+  
+  mnli_tibbles <- purrr::map(
+    dataset_names,
+    function(this_dataset) {
+      # We specify column types to make sure things come in as we expect.
+      column_spec <- dplyr::case_when(
+        stringr::str_starts(this_dataset, "dev_") ~ "iicccccccccccccc",
+        stringr::str_starts(this_dataset, "test_") ~ "iiiccccccc",
+        TRUE ~ "iicccccccccc"
+      )
+      raw_tibble <- readr::read_tsv(
+        unz(source_file, fs::path("MNLI", this_dataset, ext = "tsv")),
+        col_types = column_spec,
+        # There are a couple lines that screw up if we include a quote
+        # character.
+        quote = ""
+      )
+      # If there are labels, standardize them, to make sure the factor levels
+      # are always the same.
+      if ("gold_label" %in% colnames(raw_tibble)) {
+        raw_tibble$gold_label <- factor(
+          raw_tibble$gold_label,
+          levels = c("entailment", "neutral", "contradiction")
+        )
+      }
+      return(
+        dplyr::select(
+          raw_tibble,
+          -index,
+          -promptID,
+          -pairID,
+          -dplyr::ends_with("_parse"),
+          -dplyr::starts_with("label")
+        )
+      )
+    }
+  )
+  
+  return(mnli_tibbles)
+}
+
+data_url <- "https://dl.fbaipublicfiles.com/glue/data/MNLI.zip"
+
+mnli_tibbles <- dlr::read_or_cache(
+  source_path = data_url,
+  appname = "tidybert",
+  process_f = process_mnli
+)
+```
+
+To tune, we'll need resamples of that data.
+We still want to work with a subset for speedier fitting, but not quite as small of a subset as before.
+
+```{r resample}
+mnli_head <- head(mnli_tibbles$train, 10000)
+
+# Even though this dataset has a formal test set, we'll set it up as if it
+# doesn't for a quick tidymodels demonstration.
+set.seed(1234)
+mnli_split <- rsample::initial_split(mnli_head, prop = 0.8, strata = genre)
+mnli_split
+
+mnli_train_and_val <- rsample::training(mnli_split)
+mnli_test <- rsample::testing(mnli_split)
+
+mnli_val <- rsample::validation_split(mnli_train_and_val, prop = 0.8)
+```
+
+We'll set up a workflow to tune.
+Note: `{tidybert}` is *not* currently compatible with `{recipes}`, so we'll have to work with a formula.
+
+```{r tidybert-workflow}
+tidybert_spec <- bert(
+  mode = "classification",
+  epochs = 1
+) %>% 
+  parsnip::set_engine(
+    "tidybert", 
+    bert_type = tune(),
+    n_tokens = tune()
+  )
+tidybert_workflow <- workflows::workflow(
+  gold_label ~ sentence1 + sentence2,
+  tidybert_spec
+)
+tidybert_workflow
+```
+
+We don't want to tune across all possible values of `bert_type` and `n_tokens`, so we'll specify those in our tuning grid.
+We'll use the first two (smallest) pre-trained BERT models from torchtransformers::available_berts, and 32 ($2^5$), 64 ($2^6$), and 128 ($2^7$) tokens.
+
+```{r grid}
+grid <- tidybert_workflow %>% 
+  workflows::extract_parameter_set_dials() %>% 
+  update(
+    bert_type = bert_type(
+      torchtransformers::available_berts()[1:2]
+    ),
+    n_tokens = n_tokens(c(5,7))
+  ) %>% 
+  # We'll ask for a larger size than we need to let dials do the arithmetic to
+  # figure out how many combinations are possible.
+  dials::grid_latin_hypercube(size = 25)
+grid
+```
+
+Now we can tune!
+
+```{r tune}
+set.seed(1234)
+ctrl <- tune::control_grid(save_pred = TRUE)
+tidybert_result <- tidybert_workflow %>% 
+  tune::tune_grid(
+    resamples = mnli_val,
+    grid = grid,
+    control = ctrl
+  )
+tune::show_best(tidybert_result, metric = "roc_auc")
+```
+
+In this very small test, the best model had the fewest tokens (32) and the smallest model (`bert_L2H128_uncased`, aka `bert_tiny_uncased`).
