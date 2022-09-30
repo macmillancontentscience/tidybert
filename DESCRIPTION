@@ -43,6 +43,7 @@ Suggests:
     testthat (>= 3.0.0),
     dials,
     dlr,
+    parsnip,
     recipes,
     rsample,
     stringr,

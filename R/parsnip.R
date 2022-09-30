@@ -45,7 +45,7 @@
       eng = "tidybert",
       parsnip = "bert_type",
       original = "bert_type",
-      func = list(pkg = "tibybert", fun = "bert_type"),
+      func = list(pkg = "tidybert", fun = "bert_type"),
       has_submodel = FALSE
     )
 
@@ -54,7 +54,7 @@
       eng = "tidybert",
       parsnip = "n_tokens",
       original = "n_tokens",
-      func = list(pkg = "tibybert", fun = "n_tokens"),
+      func = list(pkg = "tidybert", fun = "n_tokens"),
       has_submodel = FALSE
     )
   }
