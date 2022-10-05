@@ -158,4 +158,6 @@ tidybert_result <- tidybert_workflow %>%
 tune::show_best(tidybert_result, metric = "roc_auc")
 ```
 
-In this very small test, the best model had the fewest tokens (32) and the smallest model (`bert_L2H128_uncased`, aka `bert_tiny_uncased`).
+In this very small test, the best model was the one with the fewest tokens (32) and the smallest model (`bert_L2H128_uncased`, aka `bert_tiny_uncased`).
+However, with only a few tokens available, this was likely random chance.
+If the small number of tokens held up well against larger options, it might be worthwhile to use the small token count to keep the memory imprint low.
