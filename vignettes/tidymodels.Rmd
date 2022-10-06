@@ -127,7 +127,7 @@ tidybert_workflow
 ```
 
 We don't want to tune across all possible values of `bert_type` and `n_tokens`, so we'll specify those in our tuning grid.
-We'll use the first two (smallest) pre-trained BERT models from torchtransformers::available_berts, and 32 ($2^5$), 64 ($2^6$), and 128 ($2^7$) tokens.
+We'll use the first two (smallest) pre-trained BERT models from `torchtransformers::available_berts()`, and 32 ($2^5$), 64 ($2^6$), and 128 ($2^7$) tokens.
 
 ```{r grid}
 grid <- tidybert_workflow %>% 

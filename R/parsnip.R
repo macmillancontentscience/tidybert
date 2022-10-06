@@ -253,8 +253,9 @@ NULL
 #' The pre-trained BERT model that will be fine-tuned for a model.
 #'
 #' @param values A character vector indicating the names of available models.
-#'   The default includes 31 possible values, so we recommend you select
-#'   specific models that are likely to work on your hardware.
+#'   The default uses the 7 named pre-trained BERT models. We recommend that you
+#'   select specific models that are likely to work on your hardware. See
+#'   [torchtransformers::available_berts()] for possible values.
 #'
 #' @return A parameter that can be tuned with the `tune` package.
 #' @export
@@ -262,9 +263,21 @@ NULL
 #' if (rlang::is_installed("dials")) {
 #'   bert_type()
 #' }
-bert_type <- function(values = torchtransformers::available_berts()) {
-  # This only makes works if they have dials installed.
+bert_type <- function(values = c("bert_tiny_uncased",
+                                 "bert_mini_uncased",
+                                 "bert_small_uncased",
+                                 "bert_medium_uncased",
+                                 "bert_base_uncased",
+                                 "bert_base_cased",
+                                 "bert_large_uncased")) {
+  # This only works if they have dials installed.
   rlang::check_installed("dials")
+
+  rlang::arg_match(
+    arg = values,
+    values = torchtransformers::available_berts(),
+    multiple = TRUE
+  )
 
   dials::new_qual_param(
     type = "character",
