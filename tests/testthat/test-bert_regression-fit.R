@@ -1,24 +1,21 @@
-x1 <- letters
-x2 <- rev(letters)
-y <- factor(rep(c("a", "b"), 13))
-
 train_df <- dplyr::tibble(
-  x1 = x1,
-  x2 = x2,
-  y = y
+  x1 = letters,
+  x2 = rev(letters),
+  y = (1:26)/10
 )
+y <- train_df$y
 set.seed(1234)
 validation_data <- dplyr::sample_n(train_df, 7)
 
-test_that("fitting bert_classification works for dfs", {
+test_that("fitting bert_regression works for dfs", {
   # torch_manual_seed appears to need an initialization for consistency between
   # my normal R session and R CMD check.
   torch::torch_manual_seed(1234)
 
   expect_error(
-    bert_classification(
+    bert_regression(
       x = dplyr::select(train_df, x1, x2),
-      y = y,
+      y = train_df$y,
       valid_x = dplyr::select(validation_data, x1, x2),
       valid_y = NULL,
       n_tokens = 5L,
@@ -30,7 +27,7 @@ test_that("fitting bert_classification works for dfs", {
 
   set.seed(1234)
   torch::torch_manual_seed(1234)
-  test_result <- bert_classification(
+  test_result <- bert_regression(
     x = dplyr::select(train_df, x1, x2),
     y = dplyr::select(train_df, y),
     n_tokens = 5L,
@@ -45,7 +42,7 @@ test_that("fitting bert_classification works for dfs", {
 
   set.seed(1234)
   torch::torch_manual_seed(1234)
-  test_result <- bert_classification(
+  test_result <- bert_regression(
     x = dplyr::select(train_df, x1, x2),
     y = y,
     valid_x = dplyr::select(validation_data, x1, x2),
@@ -58,13 +55,13 @@ test_that("fitting bert_classification works for dfs", {
   expect_snapshot(test_result)
 })
 
-test_that("fitting bert_classification works for matrices", {
+test_that("fitting bert_regression works for matrices", {
   train_matrix <- as.matrix(
     dplyr::select(train_df, x1, x2)
   )
   set.seed(1234)
   torch::torch_manual_seed(1234)
-  test_result <- bert_classification(
+  test_result <- bert_regression(
     x = train_matrix,
     y = y,
     n_tokens = 5L,
@@ -75,9 +72,9 @@ test_that("fitting bert_classification works for matrices", {
   expect_snapshot(test_result)
 })
 
-test_that("fitting bert_classification works for formulas", {
+test_that("fitting bert_regression works for formulas", {
   expect_error(
-    bert_classification(
+    bert_regression(
       y ~ x1 + x2,
       train_df,
       valid_data = dplyr::select(validation_data, x1, x2),
@@ -89,7 +86,7 @@ test_that("fitting bert_classification works for formulas", {
 
   set.seed(1234)
   torch::torch_manual_seed(1234)
-  test_result <- bert_classification(
+  test_result <- bert_regression(
     y ~ x1 + x2,
     train_df,
     n_tokens = 5L,
@@ -101,7 +98,7 @@ test_that("fitting bert_classification works for formulas", {
 
   set.seed(1234)
   torch::torch_manual_seed(1234)
-  test_result <- bert_classification(
+  test_result <- bert_regression(
     y ~ x1 + x2,
     train_df,
     valid_data = validation_data,
@@ -113,9 +110,9 @@ test_that("fitting bert_classification works for formulas", {
   expect_snapshot(test_result)
 })
 
-test_that("fitting bert_classification fails gracefully", {
+test_that("fitting bert_regression fails gracefully", {
   expect_error(
-    bert_classification(1:10),
+    bert_regression(1:10),
     regexp = "is not defined for a 'integer'"
   )
 })
