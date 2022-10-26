@@ -79,17 +79,21 @@
       bert_type()
     Output
       Pre-trained BERT Model  (qualitative)
-      31 possible value include:
-      'bert_L2H128_uncased', 'bert_L4H128_uncased', 'bert_L6H128_uncased', 'bert_L8... 
+      7 possible value include:
+      'bert_tiny_uncased', 'bert_mini_uncased', 'bert_small_uncased', 'bert_medium_... 
+
+---
+
+    `values` must be one of "bert_L2H128_uncased", "bert_L4H128_uncased", "bert_L6H128_uncased", "bert_L8H128_uncased", "bert_L10H128_uncased", "bert_L12H128_uncased", "bert_L2H256_uncased", "bert_L4H256_uncased", "bert_L6H256_uncased", "bert_L8H256_uncased", "bert_L10H256_uncased", "bert_L12H256_uncased", "bert_L2H512_uncased", "bert_L4H512_uncased", "bert_L6H512_uncased", "bert_L8H512_uncased", "bert_L10H512_uncased", "bert_L12H512_uncased", "bert_L2H768_uncased", "bert_L4H768_uncased", "bert_L6H768_uncased", "bert_L8H768_uncased", "bert_L10H768_uncased", "bert_L12H768_uncased", "bert_tiny_uncased", "bert_mini_uncased", "bert_small_uncased", "bert_medium_uncased", "bert_base_uncased", "bert_base_cased", or "bert_large_uncased", not "a".
 
 ---
 
     Code
-      bert_type(values = c("a", "b"))
+      bert_type(values = torchtransformers::available_berts()[1:3])
     Output
       Pre-trained BERT Model  (qualitative)
-      2 possible value include:
-      'a' and 'b' 
+      3 possible value include:
+      'bert_L2H128_uncased', 'bert_L4H128_uncased' and 'bert_L6H128_uncased' 
 
 ---
 
@@ -119,8 +123,10 @@
 
     Code
       bert()
+    Message <rlang_message>
+      ! parsnip could not locate an implementation for `bert` unknown model specifications using the `tidybert` engine.
     Output
-      bert Model Specification (unknown)
+      bert Model Specification (unknown mode)
       
       Main Arguments:
         epochs = 10

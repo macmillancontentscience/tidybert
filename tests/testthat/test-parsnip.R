@@ -38,8 +38,11 @@ test_that("Dials parameters work.", {
   expect_snapshot(
     bert_type()
   )
-  expect_snapshot(
+  expect_snapshot_error(
     bert_type(values = c("a", "b"))
+  )
+  expect_snapshot(
+    bert_type(values = torchtransformers::available_berts()[1:3])
   )
   expect_snapshot(
     n_tokens()
