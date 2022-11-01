@@ -4,7 +4,14 @@
 \alias{bert}
 \title{Fine-Tune a BERT Model}
 \usage{
-bert(mode = "unknown", engine = "tidybert", epochs = 10, batch_size = 128)
+bert(
+  mode = "unknown",
+  engine = "tidybert",
+  epochs = 10,
+  batch_size = 128,
+  bert_type = "bert_small_uncased",
+  n_tokens = 1
+)
 }
 \arguments{
 \item{mode}{A single character string for the prediction outcome mode.
@@ -20,6 +27,12 @@ number of epochs for training.}
 
 \item{batch_size}{The number of samples to load in each batch during
 training.}
+
+\item{bert_type}{Character; which flavor of BERT to use. See
+\code{\link[torchtransformers:available_berts]{available_berts()}} for known models.}
+
+\item{n_tokens}{An integer scalar indicating the number of tokens in the
+output.}
 }
 \value{
 A specification for a model.

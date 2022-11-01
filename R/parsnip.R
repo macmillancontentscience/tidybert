@@ -202,13 +202,16 @@
 #'   number of epochs for training.
 #' @param batch_size The number of samples to load in each batch during
 #'   training.
+#' @inheritParams bert_classification
 #'
 #' @return A specification for a model.
 #' @export
 bert <- function(mode = "unknown",
                  engine = "tidybert",
                  epochs = 10,
-                 batch_size = 128) {
+                 batch_size = 128,
+                 bert_type = "bert_small_uncased",
+                 n_tokens = 1) {
   # This only makes sense if they have parsnip installed.
   rlang::check_installed("parsnip")
 
@@ -218,7 +221,9 @@ bert <- function(mode = "unknown",
   # Capture the arguments in quosures
   args <- list(
     epochs = rlang::enquo(epochs),
-    batch_size = rlang::enquo(batch_size)
+    batch_size = rlang::enquo(batch_size),
+    bert_type = rlang::enquo(bert_type),
+    n_tokens = rlang::enquo(n_tokens)
   )
 
   # Save some empty slots for future parts of the specification
