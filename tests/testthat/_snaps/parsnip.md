@@ -28,12 +28,11 @@
       parsnip_env$bert_encoding
     Output
       # A tibble: 2 x 7
-        model engine   mode           predictor_indicators compute_i~1 remov~2 allow~3
-        <chr> <chr>    <chr>          <chr>                <lgl>       <lgl>   <lgl>  
-      1 bert  tidybert classification none                 FALSE       FALSE   TRUE   
-      2 bert  tidybert regression     none                 FALSE       FALSE   TRUE   
-      # ... with abbreviated variable names 1: compute_intercept,
-      #   2: remove_intercept, 3: allow_sparse_x
+        model engine   mode    predictor_indicators compute_intercept remove_intercept
+        <chr> <chr>    <chr>   <chr>                <lgl>             <lgl>           
+      1 bert  tidybert classi~ none                 FALSE             FALSE           
+      2 bert  tidybert regres~ none                 FALSE             FALSE           
+      # i 1 more variable: allow_sparse_x <lgl>
 
 ---
 
@@ -59,7 +58,7 @@
       parsnip_env$bert_pkgs
     Output
       # A tibble: 0 x 3
-      # ... with 3 variables: engine <chr>, pkg <list>, mode <chr>
+      # i 3 variables: engine <chr>, pkg <list>, mode <chr>
 
 ---
 
@@ -79,7 +78,9 @@
       bert_type()
     Output
       Pre-trained BERT Model  (qualitative)
-      7 possible value include:
+    Message <cliMessage>
+      7 possible values include:
+    Output
       'bert_tiny_uncased', 'bert_mini_uncased', 'bert_small_uncased', 'bert_medium_... 
 
 ---
@@ -92,7 +93,9 @@
       bert_type(values = torchtransformers::available_berts()[1:3])
     Output
       Pre-trained BERT Model  (qualitative)
-      3 possible value include:
+    Message <cliMessage>
+      3 possible values include:
+    Output
       'bert_L2H128_uncased', 'bert_L4H128_uncased' and 'bert_L6H128_uncased' 
 
 ---
@@ -131,6 +134,8 @@
       Main Arguments:
         epochs = 10
         batch_size = 128
+        bert_type = bert_small_uncased
+        n_tokens = 1
       
       Computational engine: tidybert 
       
@@ -145,6 +150,8 @@
       Main Arguments:
         epochs = 10
         batch_size = 128
+        bert_type = bert_small_uncased
+        n_tokens = 1
       
       Computational engine: tidybert 
       
@@ -159,6 +166,180 @@
       Main Arguments:
         epochs = 10
         batch_size = 128
+        bert_type = bert_small_uncased
+        n_tokens = 1
+      
+      Computational engine: tidybert 
+      
+
+# bert model args work
+
+    Code
+      bert(mode = "classification", engine = "tidybert", epochs = 5, batch_size = 16,
+        bert_type = "bert_tiny_uncased", n_tokens = 32)
+    Output
+      bert Model Specification (classification)
+      
+      Main Arguments:
+        epochs = 5
+        batch_size = 16
+        bert_type = bert_tiny_uncased
+        n_tokens = 32
+      
+      Computational engine: tidybert 
+      
+
+---
+
+    Code
+      bert(mode = "classification", engine = "tidybert") %>% parsnip::set_engine(
+        engine = "tidybert", epochs = 5, batch_size = 16, bert_type = "bert_tiny_uncased",
+        n_tokens = 32)
+    Output
+      bert Model Specification (classification)
+      
+      Main Arguments:
+        epochs = 10
+        batch_size = 128
+        bert_type = bert_small_uncased
+        n_tokens = 1
+      
+      Engine-Specific Arguments:
+        epochs = 5
+        batch_size = 16
+        bert_type = bert_tiny_uncased
+        n_tokens = 32
+      
+      Computational engine: tidybert 
+      
+
+---
+
+    Code
+      bert(mode = "classification", engine = "tidybert", epochs = 5, batch_size = 16,
+        bert_type = "bert_small_uncased", n_tokens = 32)
+    Output
+      bert Model Specification (classification)
+      
+      Main Arguments:
+        epochs = 5
+        batch_size = 16
+        bert_type = bert_small_uncased
+        n_tokens = 32
+      
+      Computational engine: tidybert 
+      
+
+---
+
+    Code
+      bert(mode = "classification", engine = "tidybert") %>% parsnip::set_engine(
+        engine = "tidybert", epochs = 5, batch_size = 16, bert_type = "bert_small_uncased",
+        n_tokens = 32)
+    Output
+      bert Model Specification (classification)
+      
+      Main Arguments:
+        epochs = 10
+        batch_size = 128
+        bert_type = bert_small_uncased
+        n_tokens = 1
+      
+      Engine-Specific Arguments:
+        epochs = 5
+        batch_size = 16
+        bert_type = bert_small_uncased
+        n_tokens = 32
+      
+      Computational engine: tidybert 
+      
+
+---
+
+    Code
+      bert(mode = "classification", engine = "tidybert") %>% parsnip::set_engine(
+        engine = "tidybert", epochs = 5, batch_size = 16, bert_type = "bert_small_uncased",
+        n_tokens = 128)
+    Output
+      bert Model Specification (classification)
+      
+      Main Arguments:
+        epochs = 10
+        batch_size = 128
+        bert_type = bert_small_uncased
+        n_tokens = 1
+      
+      Engine-Specific Arguments:
+        epochs = 5
+        batch_size = 16
+        bert_type = bert_small_uncased
+        n_tokens = 128
+      
+      Computational engine: tidybert 
+      
+
+# The workflow path doesn't throw weird messages.
+
+    Code
+      workflows::workflow(spec = bert(mode = "classification", engine = "tidybert",
+        epochs = 5, batch_size = 16, bert_type = "bert_tiny_uncased", n_tokens = 32))
+    Output
+      == Workflow ====================================================================
+      Preprocessor: None
+      Model: bert()
+      
+      -- Model -----------------------------------------------------------------------
+      bert Model Specification (classification)
+      
+      Main Arguments:
+        epochs = 5
+        batch_size = 16
+        bert_type = bert_tiny_uncased
+        n_tokens = 32
+      
+      Computational engine: tidybert 
+      
+
+---
+
+    Code
+      workflows::workflow(spec = bert(mode = "classification", engine = "tidybert",
+        epochs = 5, batch_size = 16, bert_type = "bert_small_uncased", n_tokens = 32))
+    Output
+      == Workflow ====================================================================
+      Preprocessor: None
+      Model: bert()
+      
+      -- Model -----------------------------------------------------------------------
+      bert Model Specification (classification)
+      
+      Main Arguments:
+        epochs = 5
+        batch_size = 16
+        bert_type = bert_small_uncased
+        n_tokens = 32
+      
+      Computational engine: tidybert 
+      
+
+---
+
+    Code
+      workflows::workflow(spec = bert(mode = "classification", engine = "tidybert",
+        epochs = 5, batch_size = 16, bert_type = "bert_small_uncased", n_tokens = 128))
+    Output
+      == Workflow ====================================================================
+      Preprocessor: None
+      Model: bert()
+      
+      -- Model -----------------------------------------------------------------------
+      bert Model Specification (classification)
+      
+      Main Arguments:
+        epochs = 5
+        batch_size = 16
+        bert_type = bert_small_uncased
+        n_tokens = 128
       
       Computational engine: tidybert 
       

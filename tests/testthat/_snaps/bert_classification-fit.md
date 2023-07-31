@@ -11,7 +11,7 @@
     Warning <simpleWarning>
       argument is not numeric or logical: returning NA
     Output
-      * Avg time per training batch: NA
+      * Avg time per training epoch: NA
       
       -- Results ---------------------------------------------------------------------
       Metrics observed in the last epoch.
@@ -48,7 +48,7 @@
     Warning <simpleWarning>
       argument is not numeric or logical: returning NA
     Output
-      * Avg time per training batch: NA
+      * Avg time per training epoch: NA
       
       -- Results ---------------------------------------------------------------------
       Metrics observed in the last epoch.
@@ -87,7 +87,7 @@
     Warning <simpleWarning>
       argument is not numeric or logical: returning NA
     Output
-      * Avg time per training batch: NA
+      * Avg time per training epoch: NA
       
       -- Results ---------------------------------------------------------------------
       Metrics observed in the last epoch.
@@ -126,7 +126,7 @@
     Warning <simpleWarning>
       argument is not numeric or logical: returning NA
     Output
-      * Avg time per training batch: NA
+      * Avg time per training epoch: NA
       
       -- Results ---------------------------------------------------------------------
       Metrics observed in the last epoch.
@@ -165,7 +165,7 @@
     Warning <simpleWarning>
       argument is not numeric or logical: returning NA
     Output
-      * Avg time per training batch: NA
+      * Avg time per training epoch: NA
       
       -- Results ---------------------------------------------------------------------
       Metrics observed in the last epoch.

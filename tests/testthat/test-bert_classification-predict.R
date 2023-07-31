@@ -15,7 +15,8 @@ test_that("predicting for a bert_classification works", {
     y ~ x1 + x2,
     train_df,
     n_tokens = 5L,
-    epochs = 1L
+    epochs = 1L,
+    drop_last = FALSE
   )
 
   # This model is super bad and just always picks a, but I did other tests that
