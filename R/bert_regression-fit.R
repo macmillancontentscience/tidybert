@@ -308,6 +308,7 @@ bert_regression.formula <- function(formula,
                                   ),
                                   epochs = 10,
                                   batch_size = 128,
+                                  drop_last = TRUE,
                                   luz_opt_hparams = list(),
                                   ...) {
   # Use the processed data to create a torch dataset. We could tokenize here,
@@ -346,7 +347,7 @@ bert_regression.formula <- function(formula,
     torch_ready,
     epochs = epochs,
     valid_data = valid_data,
-    dataloader_options = list(batch_size = batch_size),
+    dataloader_options = list(batch_size = batch_size, drop_last = drop_last),
     # TODO: Allow the user to send in more callbacks.
     callbacks = list(
       torchtransformers::luz_callback_bert_tokenize(

@@ -4,12 +4,16 @@
 \alias{bert_type}
 \title{Pre-Trained BERT Model}
 \usage{
-bert_type(values = torchtransformers::available_berts())
+bert_type(
+  values = c("bert_tiny_uncased", "bert_mini_uncased", "bert_small_uncased",
+    "bert_medium_uncased", "bert_base_uncased", "bert_base_cased", "bert_large_uncased")
+)
 }
 \arguments{
 \item{values}{A character vector indicating the names of available models.
-The default includes 31 possible values, so we recommend you select
-specific models that are likely to work on your hardware.}
+The default uses the 7 named pre-trained BERT models. We recommend that you
+select specific models that are likely to work on your hardware. See
+\code{\link[torchtransformers:available_berts]{torchtransformers::available_berts()}} for possible values.}
 }
 \value{
 A parameter that can be tuned with the \code{tune} package.

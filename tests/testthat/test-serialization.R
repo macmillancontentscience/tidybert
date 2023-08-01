@@ -15,7 +15,8 @@ test_that("Serialization works.", {
     y ~ x1 + x2,
     train_df,
     n_tokens = 5L,
-    epochs = 1L
+    epochs = 1L,
+    drop_last = FALSE
   )
 
   temp_location <- tempfile()

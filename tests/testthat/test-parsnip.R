@@ -38,8 +38,11 @@ test_that("Dials parameters work.", {
   expect_snapshot(
     bert_type()
   )
-  expect_snapshot(
+  expect_snapshot_error(
     bert_type(values = c("a", "b"))
+  )
+  expect_snapshot(
+    bert_type(values = torchtransformers::available_berts()[1:3])
   )
   expect_snapshot(
     n_tokens()
@@ -53,8 +56,6 @@ test_that("Dials parameters work.", {
 })
 
 test_that("bert model specification works.", {
-  # TODO: Really test tuning and fitting.
-
   skip_if_not_installed("parsnip")
   expect_snapshot(
     bert()
@@ -64,5 +65,113 @@ test_that("bert model specification works.", {
   )
   expect_snapshot(
     bert(mode = "regression")
+  )
+})
+
+test_that("bert model args work", {
+  expect_snapshot(
+    bert(
+      mode = "classification",
+      engine = "tidybert",
+      epochs = 5,
+      batch_size = 16,
+      bert_type = "bert_tiny_uncased",
+      n_tokens = 32
+    )
+  )
+  expect_snapshot(
+    bert(
+      mode = "classification",
+      engine = "tidybert"
+    ) %>%
+      parsnip::set_engine(
+        engine = "tidybert",
+        epochs = 5,
+        batch_size = 16,
+        bert_type = "bert_tiny_uncased",
+        n_tokens = 32
+      )
+  )
+  expect_snapshot(
+    bert(
+      mode = "classification",
+      engine = "tidybert",
+      epochs = 5,
+      batch_size = 16,
+      bert_type = "bert_small_uncased",
+      n_tokens = 32
+    )
+  )
+  expect_snapshot(
+    bert(
+      mode = "classification",
+      engine = "tidybert"
+    ) %>%
+      parsnip::set_engine(
+        engine = "tidybert",
+        epochs = 5,
+        batch_size = 16,
+        bert_type = "bert_small_uncased",
+        n_tokens = 32
+      )
+  )
+  expect_snapshot(
+    bert(
+      mode = "classification",
+      engine = "tidybert"
+    ) %>%
+      parsnip::set_engine(
+        engine = "tidybert",
+        epochs = 5,
+        batch_size = 16,
+        bert_type = "bert_small_uncased",
+        n_tokens = 128
+      )
+  )
+})
+
+test_that("The workflow path doesn't throw weird messages.", {
+  skip_if_not_installed("workflows")
+  expect_snapshot(
+    {
+      workflows::workflow(
+        spec = bert(
+          mode = "classification",
+          engine = "tidybert",
+          epochs = 5,
+          batch_size = 16,
+          bert_type = "bert_tiny_uncased",
+          n_tokens = 32
+        )
+      )
+    }
+  )
+  expect_snapshot(
+    {
+      workflows::workflow(
+        spec = bert(
+          mode = "classification",
+          engine = "tidybert",
+          epochs = 5,
+          batch_size = 16,
+          bert_type = "bert_small_uncased",
+          n_tokens = 32
+        )
+      )
+    }
+  )
+  expect_snapshot(
+    {
+      workflows::workflow(
+        spec = bert(
+          mode = "classification",
+          engine = "tidybert",
+          epochs = 5,
+          batch_size = 16,
+          bert_type = "bert_small_uncased",
+          n_tokens = 128
+        )
+      )
+    }
   )
 })

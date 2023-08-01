@@ -22,7 +22,8 @@ test_that("fitting bert_classification works for dfs", {
       valid_x = dplyr::select(validation_data, x1, x2),
       valid_y = NULL,
       n_tokens = 5L,
-      epochs = 1L
+      epochs = 1L,
+      drop_last = FALSE
     ),
     regexp = "Please provide both",
     class = "bad_valid_data"
@@ -34,7 +35,8 @@ test_that("fitting bert_classification works for dfs", {
     x = dplyr::select(train_df, x1, x2),
     y = dplyr::select(train_df, y),
     n_tokens = 5L,
-    epochs = 1L
+    epochs = 1L,
+    drop_last = FALSE
   )
   # Times can change.
   test_result$luz_model$records$profile <- NULL
@@ -51,7 +53,8 @@ test_that("fitting bert_classification works for dfs", {
     valid_x = dplyr::select(validation_data, x1, x2),
     valid_y = validation_data$y,
     n_tokens = 5L,
-    epochs = 1L
+    epochs = 1L,
+    drop_last = FALSE
   )
   # Times can change.
   test_result$luz_model$records$profile <- NULL
@@ -68,7 +71,8 @@ test_that("fitting bert_classification works for matrices", {
     x = train_matrix,
     y = y,
     n_tokens = 5L,
-    epochs = 1L
+    epochs = 1L,
+    drop_last = FALSE
   )
   # Times can change.
   test_result$luz_model$records$profile <- NULL
@@ -82,7 +86,8 @@ test_that("fitting bert_classification works for formulas", {
       train_df,
       valid_data = dplyr::select(validation_data, x1, x2),
       n_tokens = 5L,
-      epochs = 1L
+      epochs = 1L,
+      drop_last = FALSE
     ),
     regexp = "outcomes were not found"
   )
@@ -93,7 +98,8 @@ test_that("fitting bert_classification works for formulas", {
     y ~ x1 + x2,
     train_df,
     n_tokens = 5L,
-    epochs = 1L
+    epochs = 1L,
+    drop_last = FALSE
   )
   # Times can change.
   test_result$luz_model$records$profile <- NULL
@@ -106,7 +112,8 @@ test_that("fitting bert_classification works for formulas", {
     train_df,
     valid_data = validation_data,
     n_tokens = 5L,
-    epochs = 1L
+    epochs = 1L,
+    drop_last = FALSE
   )
   # Times can change.
   test_result$luz_model$records$profile <- NULL

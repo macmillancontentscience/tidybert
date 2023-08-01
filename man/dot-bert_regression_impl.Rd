@@ -15,6 +15,7 @@
   metrics = list(luz::luz_metric_rmse()),
   epochs = 10,
   batch_size = 128,
+  drop_last = TRUE,
   luz_opt_hparams = list(),
   ...
 )
@@ -42,7 +43,9 @@ implement a method called \code{loss}.}
 the model parameters.}
 
 \item{metrics}{(\code{list}, optional) A list of metrics to be tracked during
-the training procedure.}
+the training procedure. Sometimes, you want some metrics to be evaluated
+only during training or validation, in this case you can pass a \code{\link[luz:luz_metric_set]{luz_metric_set()}}
+object to specify metrics used in each stage.}
 
 \item{epochs}{(int) The maximum number of epochs for training the model. If a
 single value is provided, this is taken to be the \code{max_epochs} and
@@ -53,6 +56,11 @@ maximum number of epochs are included in the context object as
 
 \item{batch_size}{(int, optional): how many samples per batch to load
 (default: \code{1}).}
+
+\item{drop_last}{(bool, optional): set to \code{TRUE} to drop the last incomplete batch,
+if the dataset size is not divisible by the batch size. If \code{FALSE} and
+the size of dataset is not divisible by the batch size, then the last batch
+will be smaller. (default: \code{FALSE})}
 
 \item{luz_opt_hparams}{List; parameters to pass on to
 \code{\link[luz]{set_opt_hparams}} to initialize the optimizer.}

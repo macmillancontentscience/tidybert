@@ -39,7 +39,9 @@ implement a method called \code{loss}.}
 the model parameters.}
 
 \item{metrics}{(\code{list}, optional) A list of metrics to be tracked during
-the training procedure.}
+the training procedure. Sometimes, you want some metrics to be evaluated
+only during training or validation, in this case you can pass a \code{\link[luz:luz_metric_set]{luz_metric_set()}}
+object to specify metrics used in each stage.}
 
 \item{epochs}{(int) The maximum number of epochs for training the model. If a
 single value is provided, this is taken to be the \code{max_epochs} and
